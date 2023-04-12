@@ -7,16 +7,38 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("DevCors", policyBuilder =>
+    {
+        policyBuilder.WithOrigins("http://localhost:3000/")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+    options.AddPolicy("ProdCors", policyBuilder =>
+    {
+        policyBuilder.WithOrigins("https://road-gap-front.vercel.app/")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseCors("DevCors");
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseHttpsRedirection();
+else
+{   
+    app.UseCors("ProdCors");
+    app.UseHttpsRedirection();
+}
 
 app.UseAuthorization();
 
