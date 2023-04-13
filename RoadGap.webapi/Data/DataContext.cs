@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using RoadGap.webapi.Models;
 using Task = RoadGap.webapi.Models.Task;
 
@@ -29,10 +30,10 @@ public class DataContext : DbContext
     {
         modelBuilder.Entity<Task>()
             .ToTable("Tasks")
-            .HasKey();
+            .HasKey(t => t.TaskId);
         modelBuilder.Entity<Category>()
-            .HasKey();
+            .HasKey(t => t.CategoryId);
         modelBuilder.Entity<Status>()
-            .HasKey();
+            .HasKey(t => t.StatusId);
     }
 }
