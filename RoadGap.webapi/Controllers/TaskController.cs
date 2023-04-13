@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using RoadGap.webapi.Data;
+using RoadGap.webapi.Dtos;
 using Task = RoadGap.webapi.Models.Task;
 
 namespace RoadGap.webapi.Controllers;
@@ -86,4 +87,33 @@ public class TaskController : ControllerBase
         return Ok("Task updated successfully.");
     }
 
+    [HttpPost("CreateTask")]
+    public IActionResult CreateTask(TaskToAddDto taskToAdd)
+    {
+        if (!_context.Category.Any(c => c.CategoryId == taskToAdd.CategoryId))
+        {
+            return BadRequest("Invalid category id.");
+        }
+
+        if (!_context.Status.Any(s => s.StatusId == taskToAdd.StatusId))
+        {
+            return BadRequest("Invalid status id.");
+        }
+        
+        var task = new Task
+        {
+            Title = taskToAdd.Title,
+            Description = taskToAdd.Description,
+            CategoryId = taskToAdd.CategoryId,
+            StatusId = taskToAdd.StatusId,
+            StartTime = taskToAdd.StartTime,
+            Deadline = taskToAdd.Deadline,
+            TaskUpdated = taskToAdd.TaskUpdated,
+        };
+        
+        _context.Tasks.Add(task);
+        _context.SaveChanges();
+        
+        return Ok("Task created successfully.");
+    }
 }
