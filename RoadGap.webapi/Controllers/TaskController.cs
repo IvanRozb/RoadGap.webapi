@@ -2,6 +2,8 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using RoadGap.webapi.Data;
 using RoadGap.webapi.Dtos;
+using RoadGap.webapi.Service;
+using RoadGap.webapi.Service.Implementation;
 using Task = RoadGap.webapi.Models.Task;
 
 namespace RoadGap.webapi.Controllers;
@@ -10,12 +12,12 @@ namespace RoadGap.webapi.Controllers;
 [Route("[controller]")]
 public class TaskController : ControllerBase
 {
-    private readonly DataContext _context;
+    private readonly ITaskService _taskService;
     private readonly IMapper _mapper;
 
     public TaskController(IConfiguration configuration)
     {
-        _context = new DataContext(configuration);
+        _taskService = new TaskService(configuration);
         _mapper = new Mapper(new MapperConfiguration(configurationExpression =>
         {
             configurationExpression.CreateMap<TaskToUpsertDto, Task>();
@@ -23,66 +25,46 @@ public class TaskController : ControllerBase
     }
     
     [HttpGet("GetTasks")]
-    public IEnumerable<Task> GetTasks()
+    public IActionResult GetTasks()
     {
-        return _context.Tasks;
+        var tasks = _taskService.GetTasks();
+        return Ok(tasks);
     }
 
     [HttpGet("GetTaskById/{taskId:int}")]
     public IActionResult GetTaskById(int taskId)
     {
-        var task = _context.Tasks.FirstOrDefault(t => t.TaskId == taskId);
-
-        if (task == null)
-        {
-            return NotFound($"No task found with ID = {taskId}");
-        }
-
+        var task = _taskService.GetTaskById(taskId);
         return Ok(task);
     }
 
     [HttpGet("GetTasksBySearch/{searchParam}")]
     public IActionResult GetTasksBySearch(string searchParam)
     {
-        var keywords = searchParam.Split(' ');
-        var tasks = _context.Tasks;
-        var searchedTasks = new List<Task>();
+        var searchedTasks = _taskService
+            .GetTasksBySearch(searchParam);
         
-        foreach (var keyword in keywords)
-        {
-            searchedTasks.AddRange(tasks.Where(task =>
-                task.Title.Contains(keyword) ||
-                task.Description.Contains(keyword))
-                .ToList());
-        }
-
         return Ok(searchedTasks);
     }
     
     [HttpPut("EditTask/{taskId:int}")]
     public IActionResult EditTask(int taskId, [FromBody] TaskToUpsertDto taskDto)
     {
-        if (!_context.Category.Any(c => c.CategoryId == taskDto.CategoryId))
+        if (!_taskService.CategoryExists(taskDto.CategoryId))
         {
             return BadRequest("Invalid category id.");
         }
 
-        if (!_context.Status.Any(s => s.StatusId == taskDto.StatusId))
+        if (!_taskService.StatusExists(taskDto.StatusId))
         {
             return BadRequest("Invalid status id.");
         }
 
-        var taskDb = _context.Tasks
-            .FirstOrDefault(t => t.TaskId == taskId);
-
-        if (taskDb == null)
-        {
-            return NotFound("Task not found.");
-        }
+        var taskDb = _taskService.GetTaskById(taskId);
 
         _mapper.Map(taskDto, taskDb);
 
-        _context.SaveChanges();
+        _taskService.SaveChanges();
 
         return Ok("Task updated successfully.");
     }
@@ -90,20 +72,21 @@ public class TaskController : ControllerBase
     [HttpPost("CreateTask")]
     public IActionResult CreateTask(TaskToUpsertDto taskToAdd)
     {
-        if (!_context.Category.Any(c => c.CategoryId == taskToAdd.CategoryId))
+        if (!_taskService.CategoryExists(taskToAdd.CategoryId))
         {
             return BadRequest("Invalid category id.");
         }
 
-        if (!_context.Status.Any(s => s.StatusId == taskToAdd.StatusId))
+        if (!_taskService.StatusExists(taskToAdd.StatusId))
         {
             return BadRequest("Invalid status id.");
         }
         
         var task = _mapper.Map<Task>(taskToAdd);
+
+        _taskService.AddEntity(task);
         
-        _context.Tasks.Add(task);
-        _context.SaveChanges();
+        _taskService.SaveChanges();
         
         return Ok("Task created successfully.");
     }
@@ -111,14 +94,10 @@ public class TaskController : ControllerBase
     [HttpDelete("DeleteTask/{taskId:int}")]
     public IActionResult DeleteTask(int taskId)
     {
-        var task = _context.Tasks.FirstOrDefault(t => t.TaskId == taskId);
-        if (task == null)
-        {
-            return NotFound("Task not found.");
-        }
+        var task = _taskService.GetTaskById(taskId);
 
-        _context.Tasks.Remove(task);
-        _context.SaveChanges();
+        _taskService.RemoveEntity(task);
+        _taskService.SaveChanges();
         
         return Ok("Task deleted successfully.");
     }
