@@ -116,4 +116,19 @@ public class TaskController : ControllerBase
         
         return Ok("Task created successfully.");
     }
+
+    [HttpDelete("DeleteTask/{taskId:int}")]
+    public IActionResult DeleteTask(int taskId)
+    {
+        var task = _context.Tasks.FirstOrDefault(t => t.TaskId == taskId);
+        if (task == null)
+        {
+            return NotFound("Task not found.");
+        }
+
+        _context.Tasks.Remove(task);
+        _context.SaveChanges();
+        
+        return Ok("Task deleted successfully.");
+    }
 }
