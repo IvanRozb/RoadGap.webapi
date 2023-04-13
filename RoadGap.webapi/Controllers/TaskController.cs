@@ -15,9 +15,9 @@ public class TaskController : ControllerBase
     private readonly ITaskService _taskService;
     private readonly IMapper _mapper;
 
-    public TaskController(IConfiguration configuration)
+    public TaskController(ITaskService taskService)
     {
-        _taskService = new TaskService(configuration);
+        _taskService = taskService;
         _mapper = new Mapper(new MapperConfiguration(configurationExpression =>
         {
             configurationExpression.CreateMap<TaskToUpsertDto, Task>();
