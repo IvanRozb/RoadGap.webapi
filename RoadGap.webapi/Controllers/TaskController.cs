@@ -59,7 +59,7 @@ public class TaskController : ControllerBase
         return Ok(searchedTasks);
     }
     
-    [HttpPut("EditTask/{taskId}")]
+    [HttpPut("EditTask/{taskId:int}")]
     public IActionResult EditTask(int taskId, [FromBody] TaskToUpsertDto taskDto)
     {
         if (!_context.Category.Any(c => c.CategoryId == taskDto.CategoryId))
