@@ -18,6 +18,19 @@ public class TaskController : ControllerBase
     [HttpGet("GetTasks")]
     public IEnumerable<Task> GetTasks()
     {
-        return _context.Tasks.ToList();
+        return _context.Tasks;
+    }
+
+    [HttpGet("GetTaskById/{taskId:int}")]
+    public IActionResult GetTaskById(int taskId)
+    {
+        var task = _context.Tasks.FirstOrDefault(t => t.TaskId == taskId);
+
+        if (task == null)
+        {
+            return NotFound($"No task found with ID = {taskId}");
+        }
+
+        return Ok(task);
     }
 }
