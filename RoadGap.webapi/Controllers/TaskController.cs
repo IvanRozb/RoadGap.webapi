@@ -33,4 +33,22 @@ public class TaskController : ControllerBase
 
         return Ok(task);
     }
+
+    [HttpGet("GetTasksBySearch/{searchParam}")]
+    public IActionResult GetTasksBySearch(string searchParam)
+    {
+        var keywords = searchParam.Split(' ');
+        var tasks = _context.Tasks;
+        var searchedTasks = new List<Task>();
+        
+        foreach (var keyword in keywords)
+        {
+            searchedTasks.AddRange(tasks.Where(task =>
+                task.Title.Contains(keyword) ||
+                task.Description.Contains(keyword))
+                .ToList());
+        }
+
+        return Ok(searchedTasks);
+    }
 }
