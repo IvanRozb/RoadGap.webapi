@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using RoadGap.webapi.Data;
 using RoadGap.webapi.Dtos;
@@ -10,10 +11,15 @@ namespace RoadGap.webapi.Controllers;
 public class TaskController : ControllerBase
 {
     private readonly DataContext _context;
+    private readonly IMapper _mapper;
 
     public TaskController(IConfiguration configuration)
     {
         _context = new DataContext(configuration);
+        _mapper = new Mapper(new MapperConfiguration(configurationExpression =>
+        {
+            configurationExpression.CreateMap<TaskToUpsertDto, Task>();
+        }));
     }
     
     [HttpGet("GetTasks")]
@@ -53,34 +59,28 @@ public class TaskController : ControllerBase
         return Ok(searchedTasks);
     }
     
-    [HttpPut("EditTask")]
-    public IActionResult EditTask(Task task)
+    [HttpPut("EditTask/{taskId}")]
+    public IActionResult EditTask(int taskId, [FromBody] TaskToUpsertDto taskDto)
     {
-        if (!_context.Category.Any(c => c.CategoryId == task.CategoryId))
+        if (!_context.Category.Any(c => c.CategoryId == taskDto.CategoryId))
         {
             return BadRequest("Invalid category id.");
         }
 
-        if (!_context.Status.Any(s => s.StatusId == task.StatusId))
+        if (!_context.Status.Any(s => s.StatusId == taskDto.StatusId))
         {
             return BadRequest("Invalid status id.");
         }
 
         var taskDb = _context.Tasks
-            .FirstOrDefault(t => t.TaskId == task.TaskId);
+            .FirstOrDefault(t => t.TaskId == taskId);
 
         if (taskDb == null)
         {
             return NotFound("Task not found.");
         }
 
-        taskDb.Title = task.Title;
-        taskDb.Description = task.Description;
-        taskDb.CategoryId = task.CategoryId;
-        taskDb.StatusId = task.StatusId;
-        taskDb.StartTime = task.StartTime;
-        taskDb.Deadline = task.Deadline;
-        taskDb.TaskUpdated = task.TaskUpdated;
+        _mapper.Map(taskDto, taskDb);
 
         _context.SaveChanges();
 
@@ -88,7 +88,7 @@ public class TaskController : ControllerBase
     }
 
     [HttpPost("CreateTask")]
-    public IActionResult CreateTask(TaskToAddDto taskToAdd)
+    public IActionResult CreateTask(TaskToUpsertDto taskToAdd)
     {
         if (!_context.Category.Any(c => c.CategoryId == taskToAdd.CategoryId))
         {
@@ -100,16 +100,7 @@ public class TaskController : ControllerBase
             return BadRequest("Invalid status id.");
         }
         
-        var task = new Task
-        {
-            Title = taskToAdd.Title,
-            Description = taskToAdd.Description,
-            CategoryId = taskToAdd.CategoryId,
-            StatusId = taskToAdd.StatusId,
-            StartTime = taskToAdd.StartTime,
-            Deadline = taskToAdd.Deadline,
-            TaskUpdated = taskToAdd.TaskUpdated,
-        };
+        var task = _mapper.Map<Task>(taskToAdd);
         
         _context.Tasks.Add(task);
         _context.SaveChanges();
