@@ -1,6 +1,6 @@
 namespace RoadGap.webapi.Dtos;
 
-public class TaskToAddDto
+public class TaskToUpsertDto
 {
     public int CategoryId { get; set; }
     public int StatusId { get; set; }
