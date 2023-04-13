@@ -51,4 +51,39 @@ public class TaskController : ControllerBase
 
         return Ok(searchedTasks);
     }
+    
+    [HttpPut("EditTask")]
+    public IActionResult EditTask(Task task)
+    {
+        if (!_context.Category.Any(c => c.CategoryId == task.CategoryId))
+        {
+            return BadRequest("Invalid category id.");
+        }
+
+        if (!_context.Status.Any(s => s.StatusId == task.StatusId))
+        {
+            return BadRequest("Invalid status id.");
+        }
+
+        var taskDb = _context.Tasks
+            .FirstOrDefault(t => t.TaskId == task.TaskId);
+
+        if (taskDb == null)
+        {
+            return NotFound("Task not found.");
+        }
+
+        taskDb.Title = task.Title;
+        taskDb.Description = task.Description;
+        taskDb.CategoryId = task.CategoryId;
+        taskDb.StatusId = task.StatusId;
+        taskDb.StartTime = task.StartTime;
+        taskDb.Deadline = task.Deadline;
+        taskDb.TaskUpdated = task.TaskUpdated;
+
+        _context.SaveChanges();
+
+        return Ok("Task updated successfully.");
+    }
+
 }
