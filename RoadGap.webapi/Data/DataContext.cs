@@ -15,8 +15,8 @@ public class DataContext : DbContext
     }
 
     public virtual DbSet<Task> Tasks { get; set; }
-    public virtual DbSet<Category> Categories { get; set; }
-    public virtual DbSet<Status> Statuses { get; set; }
+    public virtual DbSet<Category> Category { get; set; }
+    public virtual DbSet<Status> Status { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
