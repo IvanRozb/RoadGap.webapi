@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace RoadGap.webapi.Models;
 
-public class Task
+public class TaskModel
 {
     [Required]
     public int TaskId { get; set; }

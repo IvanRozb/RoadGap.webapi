@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using RoadGap.webapi.Models;
-using Task = RoadGap.webapi.Models.Task;
 
 namespace RoadGap.webapi.Data;
 
@@ -14,7 +12,7 @@ public class DataContext : DbContext
         _configuration = configuration;
     }
 
-    public virtual DbSet<Task> Tasks { get; set; }
+    public virtual DbSet<TaskModel> Tasks { get; set; }
     public virtual DbSet<Category> Category { get; set; }
     public virtual DbSet<Status> Status { get; set; }
 
@@ -28,7 +26,7 @@ public class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Task>()
+        modelBuilder.Entity<TaskModel>()
             .ToTable("Tasks")
             .HasKey(t => t.TaskId);
         modelBuilder.Entity<Category>()

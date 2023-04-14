@@ -2,8 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using RoadGap.webapi.Controllers;
 using RoadGap.webapi.Dtos;
+using RoadGap.webapi.Models;
 using RoadGap.webapi.Repositories;
-using Task = RoadGap.webapi.Models.Task;
 
 namespace RoadGapTest.Controllers;
 
@@ -25,7 +25,7 @@ public class TaskControllerTests
     {
         // Arrange
         _mock.Setup(x => x.GetTasks())
-            .Returns(new[] { new Task(), new Task() });
+            .Returns(new[] { new TaskModel(), new TaskModel() });
         
         //Act
         var result = _taskController.Get() as OkObjectResult;
@@ -44,7 +44,7 @@ public class TaskControllerTests
     {
         // Arrange
         _mock.Setup(x => x.GetTasks())
-            .Returns(new List<Task>());
+            .Returns(new List<TaskModel>());
         
         //Act
         var result = _taskController.Get() as OkObjectResult;
@@ -53,9 +53,9 @@ public class TaskControllerTests
         Assert.That(result, Is.Not.Null);
         Assert.That(result!.StatusCode, Is.EqualTo(200));
         Assert.That(result.Value, Is.Not.Null);
-        Assert.That(result.Value, Is.InstanceOf<List<Task>>());
+        Assert.That(result.Value, Is.InstanceOf<List<TaskModel>>());
 
-        var task = result.Value as List<Task>;
+        var task = result.Value as List<TaskModel>;
         Assert.That(task, Is.Empty);
     }
 
@@ -64,7 +64,7 @@ public class TaskControllerTests
     {
         // Arrange
         _mock.Setup(x => x.GetTaskById(It.IsAny<int>()))
-            .Returns(new Task(){TaskId = 2});
+            .Returns(new TaskModel(){TaskId = 2});
         
         //Act
         var result = _taskController.Get(1) as OkObjectResult;
@@ -83,7 +83,7 @@ public class TaskControllerTests
     {
         // Arrange
         _mock.Setup(x => x.GetTaskById(It.IsAny<int>()))
-            .Returns<Task>(null);
+            .Returns<TaskModel>(null);
         
         //Act
         var result = _taskController.Get(1) as NotFoundObjectResult;
@@ -100,7 +100,7 @@ public class TaskControllerTests
         // Arrange
         const string searchParam = "searchParam";
         _mock.Setup(x => x.GetTasksBySearch(searchParam))
-            .Returns(new[] { new Task { Title = "1 or searchParam or 2" } });
+            .Returns(new[] { new TaskModel { Title = "1 or searchParam or 2" } });
         
         //Act
         var result = _taskController.Get(searchParam) as OkObjectResult;
@@ -112,7 +112,7 @@ public class TaskControllerTests
             Assert.That(result!.StatusCode, Is.EqualTo(200));
             Assert.That(result.Value, Is.Not.Null);
         });
-        if (result!.Value is not List<Task> tasks) return;
+        if (result!.Value is not List<TaskModel> tasks) return;
         foreach (var task in tasks)
         {
             Assert.That(task.Title, Does.Contain(searchParam));
@@ -125,7 +125,7 @@ public class TaskControllerTests
         // Arrange
         const string searchParam = "searchParam";
         _mock.Setup(x => x.GetTasksBySearch(searchParam))
-            .Returns(Array.Empty<Task>());
+            .Returns(Array.Empty<TaskModel>());
     
         //Act
         var result = _taskController.Get(searchParam) as OkObjectResult;
@@ -152,7 +152,7 @@ public class TaskControllerTests
         };
         _mock.Setup(x => x.CategoryExists(It.IsAny<int>())).Returns(true);
         _mock.Setup(x => x.StatusExists(It.IsAny<int>())).Returns(true);
-        _mock.Setup(x => x.GetTaskById(It.IsAny<int>())).Returns(new Task());
+        _mock.Setup(x => x.GetTaskById(It.IsAny<int>())).Returns(new TaskModel());
 
         // Act
         var result = _taskController.Edit(1, taskToUpsertDto) as OkObjectResult;
@@ -182,7 +182,7 @@ public class TaskControllerTests
         };
         _mock.Setup(x => x.CategoryExists(It.IsAny<int>())).Returns(categoryExists);
         _mock.Setup(x => x.StatusExists(It.IsAny<int>())).Returns(statusExists);
-        _mock.Setup(x => x.GetTaskById(It.IsAny<int>())).Returns(new Task());
+        _mock.Setup(x => x.GetTaskById(It.IsAny<int>())).Returns(new TaskModel());
 
         // Act
         var result = _taskController.Edit(1, taskToUpsertDto) as BadRequestObjectResult;
@@ -206,7 +206,7 @@ public class TaskControllerTests
         };
         _mock.Setup(x => x.CategoryExists(It.IsAny<int>())).Returns(true);
         _mock.Setup(x => x.StatusExists(It.IsAny<int>())).Returns(true);
-        _mock.Setup(x => x.GetTaskById(It.IsAny<int>())).Returns<Task>(null);
+        _mock.Setup(x => x.GetTaskById(It.IsAny<int>())).Returns<TaskModel>(null);
 
         // Act
         var result = _taskController.Edit(1, taskToUpsertDto) as NotFoundObjectResult;
@@ -222,7 +222,7 @@ public class TaskControllerTests
     {
         // Arrange
         const int taskId = 1;
-        _mock.Setup(x => x.GetTaskById(taskId)).Returns(new Task { TaskId = taskId });
+        _mock.Setup(x => x.GetTaskById(taskId)).Returns(new TaskModel { TaskId = taskId });
 
         // Act
         var result = _taskController.Delete(taskId) as OkObjectResult;
@@ -238,7 +238,7 @@ public class TaskControllerTests
     {
         // Arrange
         const int taskId = 1;
-        _mock.Setup(x => x.GetTaskById(taskId)).Returns<Task>(null);
+        _mock.Setup(x => x.GetTaskById(taskId)).Returns<TaskModel>(null);
 
         // Act
         var result = _taskController.Delete(taskId) as NotFoundObjectResult;

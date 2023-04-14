@@ -1,8 +1,8 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using RoadGap.webapi.Dtos;
+using RoadGap.webapi.Models;
 using RoadGap.webapi.Repositories;
-using Task = RoadGap.webapi.Models.Task;
 
 namespace RoadGap.webapi.Controllers;
 
@@ -18,7 +18,7 @@ public class TaskController : ControllerBase
         _taskRepository = taskRepository;
         _mapper = new Mapper(new MapperConfiguration(configurationExpression =>
         {
-            configurationExpression.CreateMap<TaskToUpsertDto, Task>();
+            configurationExpression.CreateMap<TaskToUpsertDto, TaskModel>();
         }));
     }
     
@@ -90,7 +90,7 @@ public class TaskController : ControllerBase
             return BadRequest("Invalid status id.");
         }
 
-        var task = _mapper.Map<Task>(taskToAdd);
+        var task = _mapper.Map<TaskModel>(taskToAdd);
 
         _taskRepository.AddEntity(task);
         _taskRepository.SaveChanges();

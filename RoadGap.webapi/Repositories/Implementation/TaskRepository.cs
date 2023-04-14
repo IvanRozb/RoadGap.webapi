@@ -1,5 +1,5 @@
 using RoadGap.webapi.Data;
-using Task = RoadGap.webapi.Models.Task;
+using RoadGap.webapi.Models;
 
 namespace RoadGap.webapi.Repositories.Implementation;
 
@@ -30,10 +30,10 @@ public class TaskRepository : ITaskRepository
         _entityFramework.Remove(entity);
     }
     
-    public IEnumerable<Task> GetTasks() =>
+    public IEnumerable<TaskModel> GetTasks() =>
         _entityFramework.Tasks.ToList();
 
-    public Task? GetTaskById(int taskId)
+    public TaskModel? GetTaskById(int taskId)
     {
         var task = _entityFramework.Tasks
             .FirstOrDefault(task => task.TaskId == taskId);
@@ -41,11 +41,11 @@ public class TaskRepository : ITaskRepository
         return task;
     }
 
-    public IEnumerable<Task> GetTasksBySearch(string searchParam)
+    public IEnumerable<TaskModel> GetTasksBySearch(string searchParam)
     {
         var keywords = searchParam.Split(' ');
         var tasks = _entityFramework.Tasks;
-        var searchedTasks = new List<Task>();
+        var searchedTasks = new List<TaskModel>();
 
         foreach (var keyword in keywords)
         {
