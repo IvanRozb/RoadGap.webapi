@@ -11,7 +11,9 @@ public class DataContext : DbContext
     {
         _configuration = configuration;
     }
-
+    public DataContext(DbContextOptions<DataContext> options) : base(options)
+    {
+    }
     public virtual DbSet<TaskModel> Tasks { get; set; }
     public virtual DbSet<Category> Category { get; set; }
     public virtual DbSet<Status> Status { get; set; }
