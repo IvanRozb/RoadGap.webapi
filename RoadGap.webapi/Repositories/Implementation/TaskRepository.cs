@@ -48,7 +48,6 @@ public class TaskRepository : Repository, ITaskRepository
                 .CreateInternalServerError($"An error occurred while getting tasks: {ex.Message}");
         }
     }
-
     public RepositoryResponse<TaskModel> GetTaskById(int taskId)
     {
         var task = EntityFramework.Tasks
@@ -62,24 +61,6 @@ public class TaskRepository : Repository, ITaskRepository
         return RepositoryResponse<TaskModel>
             .CreateSuccess(task, "Task found successfully.");
     }
-
-    public IEnumerable<TaskModel> GetTasksBySearch(string searchParam)
-    {
-        var keywords = searchParam.ToLower().Split(' ');
-        var tasks = EntityFramework.Tasks;
-        var searchedTasks = new List<TaskModel>();
-        
-        foreach (var keyword in keywords)
-        {
-            searchedTasks.AddRange(tasks.Where(task =>
-                    task.Title.ToLower().Contains(keyword) ||
-                    task.Description.ToLower().Contains(keyword))
-                .ToList());
-        }
-
-        return searchedTasks;
-    }
-    
     public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto)
     {
         try
@@ -115,7 +96,6 @@ public class TaskRepository : Repository, ITaskRepository
             return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while editing task with ID {taskId}: {ex.Message}");
         }
     }
-
     public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd)
     {
         try
@@ -143,7 +123,6 @@ public class TaskRepository : Repository, ITaskRepository
             return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while creating task: {ex.Message}");
         }
     }
-
     public RepositoryResponse<int> DeleteTask(int taskId)
     {
         var response = GetTaskById(taskId);
