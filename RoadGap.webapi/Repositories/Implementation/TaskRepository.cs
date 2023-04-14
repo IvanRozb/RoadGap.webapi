@@ -22,7 +22,10 @@ public class TaskRepository : ITaskRepository, IDisposable
         SaveChanges();
     }
 
-
+    public DataContext GetDataContext()
+    {
+        return _entityFramework;
+    }
     public void SaveChanges()
     {
         if (_entityFramework.SaveChanges() < 0)
