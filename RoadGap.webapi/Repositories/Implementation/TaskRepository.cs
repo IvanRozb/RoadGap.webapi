@@ -3,7 +3,7 @@ using RoadGap.webapi.Models;
 
 namespace RoadGap.webapi.Repositories.Implementation;
 
-public class TaskRepository : ITaskRepository
+public class TaskRepository : ITaskRepository, IDisposable
 {
     private readonly DataContext _entityFramework;
 
@@ -11,6 +11,17 @@ public class TaskRepository : ITaskRepository
     {
         _entityFramework = new DataContext(configuration);
     }
+
+    public TaskRepository(DataContext context)
+    {
+        _entityFramework = context;
+    }
+    public void Dispose()
+    {
+        _entityFramework.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
 
     public void SaveChanges()
     {
