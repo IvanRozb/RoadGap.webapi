@@ -33,15 +33,12 @@ public class TaskService : ITaskService
     public IEnumerable<Task> GetTasks() =>
         _entityFramework.Tasks.ToList();
 
-    public Task GetTaskById(int taskId)
+    public Task? GetTaskById(int taskId)
     {
         var task = _entityFramework.Tasks
             .FirstOrDefault(task => task.TaskId == taskId);
         
-        if (task != null)
-            return task;
-        
-        throw new Exception("Failed to get task.");
+        return task;
     }
 
     public IEnumerable<Task> GetTasksBySearch(string searchParam)

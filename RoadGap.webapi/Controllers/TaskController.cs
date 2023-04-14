@@ -1,9 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using RoadGap.webapi.Data;
 using RoadGap.webapi.Dtos;
 using RoadGap.webapi.Service;
-using RoadGap.webapi.Service.Implementation;
 using Task = RoadGap.webapi.Models.Task;
 
 namespace RoadGap.webapi.Controllers;
@@ -35,6 +33,11 @@ public class TaskController : ControllerBase
     public IActionResult Get(int taskId)
     {
         var task = _taskService.GetTaskById(taskId);
+        if (task == null)
+        {
+            return NotFound("There's no task with this id.");
+        }
+
         return Ok(task);
     }
 
