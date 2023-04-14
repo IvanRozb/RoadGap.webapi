@@ -100,45 +100,73 @@ public class TaskControllerTests
         // Arrange
         const string searchParam = "searchParam";
         _mock.Setup(x => x.GetTasksBySearch(searchParam))
-            .Returns(new[] { new TaskModel { Title = "1 or searchParam or 2" } });
+            .Returns(new List<TaskModel> { new() { Title = "1 or searchParam or 2" } });
         
         //Act
         var result = _taskController.Get(searchParam) as OkObjectResult;
         
         //Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(result!.StatusCode, Is.EqualTo(200));
-            Assert.That(result.Value, Is.Not.Null);
-        });
-        if (result!.Value is not List<TaskModel> tasks) return;
-        foreach (var task in tasks)
+        Assert.That(result!.StatusCode, Is.EqualTo(200));
+        Assert.That(result.Value, Is.Not.Null);
+        
+        var tasks = result.Value as List<TaskModel>;
+        foreach (var task in tasks!)
         {
             Assert.That(task.Title, Does.Contain(searchParam));
         }
     }
 
     [Test]
-    public void Get_WithNoSearchMatches_ReturnsEmptyList()
+    public void Get_WithNoSearchParam_ReturnsAllTasks()
+    {
+        // Arrange
+        _mock.Setup(x => x.GetTasks())
+            .Returns(new List<TaskModel> { new() { Title = "Task 1" }, new() { Title = "Task 2" } });
+    
+        // Act
+        var result = _taskController.Get() as OkObjectResult;
+    
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.StatusCode, Is.EqualTo(200));
+        Assert.That(result.Value, Is.Not.Null);
+        Assert.That(result!.Value as List<TaskModel>, Has.Count.EqualTo(2));
+    }
+    
+    [Test]
+    public void Get_WithInvalidSearchParam_ReturnsEmptyList()
+    {
+        // Arrange
+        const string searchParam = "invalid";
+    
+        // Act
+        var result = _taskController.Get(searchParam) as OkObjectResult;
+    
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.StatusCode, Is.EqualTo(200));
+        Assert.That(result.Value, Is.Empty);
+    }
+    
+    [Test]
+    public void Get_WithNoMatchingTasks_ReturnsEmptyList()
     {
         // Arrange
         const string searchParam = "searchParam";
         _mock.Setup(x => x.GetTasksBySearch(searchParam))
-            .Returns(Array.Empty<TaskModel>());
+            .Returns(new List<TaskModel>());
     
-        //Act
+        // Act
         var result = _taskController.Get(searchParam) as OkObjectResult;
     
-        //Assert
+        // Assert
         Assert.That(result, Is.Not.Null);
-        Assert.Multiple(() =>
-        {
-            Assert.That(result!.StatusCode, Is.EqualTo(200));
-            Assert.That(result.Value, Is.Empty);
-        });
+        Assert.That(result!.StatusCode, Is.EqualTo(200));
+        Assert.That(result.Value, Is.Not.Null);
+        Assert.That(result!.Value as List<TaskModel>, Has.Count.EqualTo(0));
     }
-
+    
     [Test]
     public void Edit_WithValidTaskIdAndValidTaskToUpsertDto_ReturnsOkResult()
     {
