@@ -23,7 +23,7 @@ public class TaskController : ControllerBase
     }
 
     [HttpGet]
-    public IActionResult Get([FromQuery] string? searchParam)
+    public IActionResult Get([FromQuery] string? searchParam = null)
     {
 
         var tasks = searchParam is null
