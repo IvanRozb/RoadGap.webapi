@@ -65,6 +65,11 @@ public class TaskController : ControllerBase
 
         var taskDb = _taskService.GetTaskById(taskId);
 
+        if (taskDb == null)
+        {
+            return NotFound("There's no task with this id.");
+        }
+
         _mapper.Map(taskDto, taskDb);
 
         _taskService.SaveChanges();
@@ -84,13 +89,12 @@ public class TaskController : ControllerBase
         {
             return BadRequest("Invalid status id.");
         }
-        
+
         var task = _mapper.Map<Task>(taskToAdd);
 
         _taskService.AddEntity(task);
-        
         _taskService.SaveChanges();
-        
+
         return Ok("Task created successfully.");
     }
 
@@ -98,6 +102,11 @@ public class TaskController : ControllerBase
     public IActionResult Delete(int taskId)
     {
         var task = _taskService.GetTaskById(taskId);
+        
+        if (task == null)
+        {
+            return NotFound("There's no task with this id.");
+        }
 
         _taskService.RemoveEntity(task);
         _taskService.SaveChanges();
