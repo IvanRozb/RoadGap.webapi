@@ -5,7 +5,7 @@ namespace RoadGap.webapi.Data;
 
 public class DataContext : DbContext
 {
-    private readonly IConfiguration _configuration;
+    private readonly IConfiguration? _configuration;
 
     public DataContext(IConfiguration configuration)
     {
@@ -21,7 +21,7 @@ public class DataContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (!optionsBuilder.IsConfigured)
-            optionsBuilder.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"), 
+            optionsBuilder.UseSqlServer(_configuration?.GetConnectionString("DefaultConnection"), 
                 builder => builder.EnableRetryOnFailure()
             );
     }
