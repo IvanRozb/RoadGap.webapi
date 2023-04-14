@@ -1,9 +1,14 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace RoadGap.webapi.Models;
 
 public class Task
 {
+    [Required]
     public int TaskId { get; set; }
+    [Required]
     public int CategoryId { get; set; }
+    [Required]
     public int StatusId { get; set; }
     public string Title { get; set; } = "";
     public string Description { get; set; } = "";
