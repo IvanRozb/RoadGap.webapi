@@ -9,7 +9,7 @@ using Task = RoadGap.webapi.Models.Task;
 namespace RoadGap.webapi.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("tasks")]
 public class TaskController : ControllerBase
 {
     private readonly ITaskService _taskService;
@@ -24,22 +24,22 @@ public class TaskController : ControllerBase
         }));
     }
     
-    [HttpGet("GetTasks")]
-    public IActionResult GetTasks()
+    [HttpGet]
+    public IActionResult Get()
     {
         var tasks = _taskService.GetTasks();
         return Ok(tasks);
     }
 
-    [HttpGet("GetTaskById/{taskId:int}")]
-    public IActionResult GetTaskById(int taskId)
+    [HttpGet("{taskId:int}")]
+    public IActionResult Get(int taskId)
     {
         var task = _taskService.GetTaskById(taskId);
         return Ok(task);
     }
 
-    [HttpGet("GetTasksBySearch/{searchParam}")]
-    public IActionResult GetTasksBySearch(string searchParam)
+    [HttpGet("{searchParam}")]
+    public IActionResult Get(string searchParam)
     {
         var searchedTasks = _taskService
             .GetTasksBySearch(searchParam);
@@ -47,8 +47,8 @@ public class TaskController : ControllerBase
         return Ok(searchedTasks);
     }
     
-    [HttpPut("EditTask/{taskId:int}")]
-    public IActionResult EditTask(int taskId, [FromBody] TaskToUpsertDto taskDto)
+    [HttpPut("{taskId:int}")]
+    public IActionResult Edit(int taskId, [FromBody] TaskToUpsertDto taskDto)
     {
         if (!_taskService.CategoryExists(taskDto.CategoryId))
         {
@@ -69,8 +69,8 @@ public class TaskController : ControllerBase
         return Ok("Task updated successfully.");
     }
 
-    [HttpPost("CreateTask")]
-    public IActionResult CreateTask(TaskToUpsertDto taskToAdd)
+    [HttpPost]
+    public IActionResult Create(TaskToUpsertDto taskToAdd)
     {
         if (!_taskService.CategoryExists(taskToAdd.CategoryId))
         {
@@ -91,8 +91,8 @@ public class TaskController : ControllerBase
         return Ok("Task created successfully.");
     }
 
-    [HttpDelete("DeleteTask/{taskId:int}")]
-    public IActionResult DeleteTask(int taskId)
+    [HttpDelete("{taskId:int}")]
+    public IActionResult Delete(int taskId)
     {
         var task = _taskService.GetTaskById(taskId);
 
