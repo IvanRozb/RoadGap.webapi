@@ -21,11 +21,15 @@ public class TaskController : ControllerBase
             configurationExpression.CreateMap<TaskToUpsertDto, TaskModel>();
         }));
     }
-    
+
     [HttpGet]
-    public IActionResult Get()
+    public IActionResult Get([FromQuery] string? searchParam)
     {
-        var tasks = _taskRepository.GetTasks();
+
+        var tasks = searchParam is null
+            ? _taskRepository.GetTasks()
+            : _taskRepository.GetTasksBySearch(searchParam);
+        ;
         return Ok(tasks);
     }
 
@@ -39,15 +43,6 @@ public class TaskController : ControllerBase
         }
 
         return Ok(task);
-    }
-
-    [HttpGet("{searchParam}")]
-    public IActionResult Get(string searchParam)
-    {
-        var searchedTasks = _taskRepository
-            .GetTasksBySearch(searchParam);
-        
-        return Ok(searchedTasks);
     }
     
     [HttpPut("{taskId:int}")]
