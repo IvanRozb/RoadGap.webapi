@@ -1,13 +1,13 @@
 using RoadGap.webapi.Data;
 using Task = RoadGap.webapi.Models.Task;
 
-namespace RoadGap.webapi.Service.Implementation;
+namespace RoadGap.webapi.Repositories.Implementation;
 
-public class TaskService : ITaskService
+public class TaskRepository : ITaskRepository
 {
     private readonly DataContext _entityFramework;
 
-    public TaskService(IConfiguration configuration)
+    public TaskRepository(IConfiguration configuration)
     {
         _entityFramework = new DataContext(configuration);
     }

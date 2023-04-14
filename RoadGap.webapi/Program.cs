@@ -1,5 +1,5 @@
-using RoadGap.webapi.Service;
-using RoadGap.webapi.Service.Implementation;
+using RoadGap.webapi.Repositories;
+using RoadGap.webapi.Repositories.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,7 +28,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-builder.Services.AddScoped<ITaskService, TaskService>();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 var app = builder.Build();
 

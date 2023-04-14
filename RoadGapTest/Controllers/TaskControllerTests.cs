@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using RoadGap.webapi.Controllers;
 using RoadGap.webapi.Dtos;
-using RoadGap.webapi.Service;
+using RoadGap.webapi.Repositories;
 using Task = RoadGap.webapi.Models.Task;
 
 namespace RoadGapTest.Controllers;
@@ -11,12 +11,12 @@ namespace RoadGapTest.Controllers;
 public class TaskControllerTests
 {
     private TaskController _taskController = null!;
-    private Mock<ITaskService> _mock = null!;
+    private Mock<ITaskRepository> _mock = null!;
 
     [SetUp]
     public void Setup()
     {
-        _mock = new Mock<ITaskService>();
+        _mock = new Mock<ITaskRepository>();
         _taskController = new TaskController(_mock.Object);
     }
 

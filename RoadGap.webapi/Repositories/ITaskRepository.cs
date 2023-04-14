@@ -1,8 +1,8 @@
 using Task = RoadGap.webapi.Models.Task;
 
-namespace RoadGap.webapi.Service;
+namespace RoadGap.webapi.Repositories;
 
-public interface ITaskService
+public interface ITaskRepository
 {
     public void SaveChanges();
     public void AddEntity<T>(T entity);
