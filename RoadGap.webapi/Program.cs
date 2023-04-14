@@ -1,3 +1,6 @@
+using RoadGap.webapi.Repositories;
+using RoadGap.webapi.Repositories.Implementation;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -24,6 +27,8 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
+
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 var app = builder.Build();
 
