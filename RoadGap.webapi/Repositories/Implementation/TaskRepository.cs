@@ -18,8 +18,8 @@ public class TaskRepository : ITaskRepository, IDisposable
     }
     public void Dispose()
     {
-        _entityFramework.Dispose();
-        GC.SuppressFinalize(this);
+        _entityFramework.Tasks.RemoveRange(_entityFramework.Tasks);
+        SaveChanges();
     }
 
 
@@ -54,15 +54,15 @@ public class TaskRepository : ITaskRepository, IDisposable
 
     public IEnumerable<TaskModel> GetTasksBySearch(string searchParam)
     {
-        var keywords = searchParam.Split(' ');
+        var keywords = searchParam.ToLower().Split(' ');
         var tasks = _entityFramework.Tasks;
         var searchedTasks = new List<TaskModel>();
-
+        
         foreach (var keyword in keywords)
         {
             searchedTasks.AddRange(tasks.Where(task =>
-                    task.Title.Contains(keyword) ||
-                    task.Description.Contains(keyword))
+                    task.Title.ToLower().Contains(keyword) ||
+                    task.Description.ToLower().Contains(keyword))
                 .ToList());
         }
 
