@@ -13,13 +13,10 @@ public class CategoryController : ControllerBase
     private readonly ICategoryRepository _categoryRepository;
     private readonly IMapper _mapper;
 
-    public CategoryController(ICategoryRepository categoryRepository)
+    public CategoryController(ICategoryRepository categoryRepository, IMapper mapper)
     {
         _categoryRepository = categoryRepository;
-        _mapper = new Mapper(new MapperConfiguration(configurationExpression =>
-        {
-            configurationExpression.CreateMap<CategoryToUpsertDto, Category>();
-        }));
+        _mapper = mapper;
     }
 
     [HttpGet]
