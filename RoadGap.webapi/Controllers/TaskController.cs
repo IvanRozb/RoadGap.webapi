@@ -13,13 +13,10 @@ public class TaskController : ControllerBase
     private readonly ITaskRepository _taskRepository;
     private readonly IMapper _mapper;
 
-    public TaskController(ITaskRepository taskRepository)
+    public TaskController(ITaskRepository taskRepository, IMapper mapper)
     {
         _taskRepository = taskRepository;
-        _mapper = new Mapper(new MapperConfiguration(configurationExpression =>
-        {
-            configurationExpression.CreateMap<TaskToUpsertDto, TaskModel>();
-        }));
+        _mapper = mapper;
     }
 
     [HttpGet]
