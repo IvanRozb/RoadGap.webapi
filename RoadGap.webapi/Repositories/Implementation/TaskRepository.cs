@@ -54,55 +54,31 @@ public class TaskRepository : Repository, ITaskRepository
         {
             if (!_entityChecker.CategoryExists(taskDto.CategoryId))
             {
-                return new RepositoryResponse<TaskModel>
-                {
-                    Success = false,
-                    Message = $"Category with ID {taskDto.CategoryId} not found",
-                    StatusCode = 400
-                };
+                return RepositoryResponse<TaskModel>.CreateBadRequest($"Category with ID {taskDto.CategoryId} not found");
             }
             
             if (!_entityChecker.StatusExists(taskDto.StatusId))
             {
-                return new RepositoryResponse<TaskModel>
-                {
-                    Success = false,
-                    Message = $"Status with ID {taskDto.StatusId} not found",
-                    StatusCode = 400
-                };
+                return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
             }
             
             var task = GetTaskById(taskId);
 
             if (task == null)
             {
-                return new RepositoryResponse<TaskModel>
-                {
-                    Success = false,
-                    Message = $"Task with ID {taskId} not found",
-                    StatusCode = 404
-                };
+                return RepositoryResponse<TaskModel>.CreateNotFound($"Task with ID {taskId} not found");
             }
             
             Mapper.Map(taskDto, task);
+            task.TaskUpdated = DateTime.Now;
 
             EntityFramework.SaveChanges();
 
-            return new RepositoryResponse<TaskModel>
-            {
-                Success = true,
-                Message = "Task updated successfully.",
-                Data = task
-            };
+            return RepositoryResponse<TaskModel>.CreateSuccess(task, "Task updated successfully.");
         }
         catch (Exception ex)
         {
-            return new RepositoryResponse<TaskModel>
-            {
-                Success = false,
-                Message = $"An error occurred while editing task with ID {taskId}: {ex.Message}",
-                StatusCode = 500
-            };
+            return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while editing task with ID {taskId}: {ex.Message}");
         }
     }
 
