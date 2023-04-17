@@ -13,6 +13,16 @@ public abstract class Repository : IRepository
         EntityFramework = new DataContext(configuration);
         Mapper = mapper;
     }
+    protected Repository(DataContext context, IMapper mapper)
+    {
+        EntityFramework = context;
+        Mapper = mapper;
+    }
+
+    public DataContext GetDataContext()
+    {
+        return EntityFramework;
+    }
 
     public void SaveChanges()
     {
