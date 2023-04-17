@@ -46,15 +46,7 @@ public class TaskController : ControllerBase
     public IActionResult Edit(int taskId, [FromBody] TaskToUpsertDto taskDto)
     {
         var result = _taskRepository.EditTask(taskId, taskDto);
-
-        if (result.Success) return Ok(result.Message);
-        if (result.StatusCode == 404)
-        {
-            return NotFound(result.Message);
-        }
-
-        return BadRequest(result.Message);
-
+        return result.ToActionResult();
     }
 
     [HttpPost]
