@@ -1,28 +1,25 @@
-using RoadGap.webapi.Data;
+using AutoMapper;
+using RoadGap.webapi.Dtos;
+using RoadGap.webapi.Helpers;
 using RoadGap.webapi.Models;
 
 namespace RoadGap.webapi.Repositories.Implementation;
 
 public class TaskRepository : Repository, ITaskRepository
 {
-    public TaskRepository(IConfiguration configuration) : base(configuration)
+    private readonly EntityChecker _entityChecker;
+    public TaskRepository(IConfiguration configuration, IMapper mapper) 
+        : base(configuration,mapper)
     {
+        _entityChecker = new EntityChecker(EntityFramework);
     }
 
-    public TaskRepository(DataContext context) : base(context)
-    {
-    }
     public void Dispose()
     {
         EntityFramework.Tasks.RemoveRange(EntityFramework.Tasks);
         SaveChanges();
     }
 
-    public DataContext GetDataContext()
-    {
-        return EntityFramework;
-    }
-    
     public IEnumerable<TaskModel> GetTasks() =>
         EntityFramework.Tasks.ToList();
 
@@ -50,4 +47,63 @@ public class TaskRepository : Repository, ITaskRepository
 
         return searchedTasks;
     }
+    
+    public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto)
+    {
+        try
+        {
+            if (!_entityChecker.CategoryExists(taskDto.CategoryId))
+            {
+                return new RepositoryResponse<TaskModel>
+                {
+                    Success = false,
+                    Message = $"Category with ID {taskDto.CategoryId} not found",
+                    StatusCode = 400
+                };
+            }
+            
+            if (!_entityChecker.StatusExists(taskDto.StatusId))
+            {
+                return new RepositoryResponse<TaskModel>
+                {
+                    Success = false,
+                    Message = $"Status with ID {taskDto.StatusId} not found",
+                    StatusCode = 400
+                };
+            }
+            
+            var task = GetTaskById(taskId);
+
+            if (task == null)
+            {
+                return new RepositoryResponse<TaskModel>
+                {
+                    Success = false,
+                    Message = $"Task with ID {taskId} not found",
+                    StatusCode = 404
+                };
+            }
+            
+            Mapper.Map(taskDto, task);
+
+            EntityFramework.SaveChanges();
+
+            return new RepositoryResponse<TaskModel>
+            {
+                Success = true,
+                Message = "Task updated successfully.",
+                Data = task
+            };
+        }
+        catch (Exception ex)
+        {
+            return new RepositoryResponse<TaskModel>
+            {
+                Success = false,
+                Message = $"An error occurred while editing task with ID {taskId}: {ex.Message}",
+                StatusCode = 500
+            };
+        }
+    }
+
 }
