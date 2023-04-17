@@ -4,10 +4,10 @@ namespace RoadGap.webapi.Helpers;
 
 public class RepositoryResponse<T>
 {
-    public T? Data { get; set; }
-    public bool Success { get; set; }
-    public string? Message { get; set; } = "";
-    public int StatusCode { get; set; }
+    private T? Data { get; init; }
+    private bool Success { get; init; }
+    private string? Message { get; init; } = "";
+    private int StatusCode { get; init; }
 
     public static RepositoryResponse<T> CreateSuccess(T data, string message = "")
     {
