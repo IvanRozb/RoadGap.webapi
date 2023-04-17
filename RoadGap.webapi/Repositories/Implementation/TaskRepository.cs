@@ -117,4 +117,21 @@ public class TaskRepository : Repository, ITaskRepository
             return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while creating task: {ex.Message}");
         }
     }
+
+    public RepositoryResponse<int> DeleteTask(int taskId)
+    {
+        var response = GetTaskById(taskId);
+        
+        if (!response.Success)
+        {
+            return RepositoryResponse<int>.CreateBadRequest($"Task with ID {taskId} not found");
+        }
+
+        var task = response.Data;
+
+        RemoveEntity(task);
+        SaveChanges();
+        
+        return RepositoryResponse<int>.CreateSuccess(taskId, "Task deleted successfully.");
+    }
 }
