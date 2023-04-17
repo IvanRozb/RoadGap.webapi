@@ -33,13 +33,8 @@ public class TaskController : ControllerBase
     [HttpGet("{taskId:int}")]
     public IActionResult Get(int taskId)
     {
-        var task = _taskRepository.GetTaskById(taskId);
-        if (task == null)
-        {
-            return NotFound("There's no task with this id.");
-        }
-
-        return Ok(task);
+        var result = _taskRepository.GetTaskById(taskId);
+        return result.ToActionResult();
     }
     
     [HttpPut("{taskId:int}")]
