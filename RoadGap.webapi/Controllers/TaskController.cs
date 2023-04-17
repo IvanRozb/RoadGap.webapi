@@ -11,12 +11,10 @@ namespace RoadGap.webapi.Controllers;
 public class TaskController : ControllerBase
 {
     private readonly ITaskRepository _taskRepository;
-    private readonly IMapper _mapper;
 
-    public TaskController(ITaskRepository taskRepository, IMapper mapper)
+    public TaskController(ITaskRepository taskRepository)
     {
         _taskRepository = taskRepository;
-        _mapper = mapper;
     }
 
     [HttpGet]
@@ -47,22 +45,8 @@ public class TaskController : ControllerBase
     [HttpPost]
     public IActionResult Create(TaskToUpsertDto taskToAdd)
     {
-        // if (!_entityChecker.CategoryExists(taskToAdd.CategoryId))
-        // {
-        //     return BadRequest("Invalid category id.");
-        // }
-        //
-        // if (!_entityChecker.StatusExists(taskToAdd.StatusId))
-        // {
-        //     return BadRequest("Invalid status id.");
-        // }
-
-        var task = _mapper.Map<TaskModel>(taskToAdd);
-
-        _taskRepository.AddEntity(task);
-        _taskRepository.SaveChanges();
-
-        return Ok("Task created successfully.");
+        var result = _taskRepository.CreateTask(taskToAdd);
+        return result.ToActionResult();
     }
 
     [HttpDelete("{taskId:int}")]
