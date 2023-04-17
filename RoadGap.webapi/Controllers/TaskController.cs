@@ -1,7 +1,5 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using RoadGap.webapi.Dtos;
-using RoadGap.webapi.Models;
 using RoadGap.webapi.Repositories;
 
 namespace RoadGap.webapi.Controllers;
@@ -24,7 +22,7 @@ public class TaskController : ControllerBase
         var tasks = searchParam is null
             ? _taskRepository.GetTasks()
             : _taskRepository.GetTasksBySearch(searchParam);
-        ;
+        
         return Ok(tasks);
     }
 
@@ -52,16 +50,7 @@ public class TaskController : ControllerBase
     [HttpDelete("{taskId:int}")]
     public IActionResult Delete(int taskId)
     {
-        var task = _taskRepository.GetTaskById(taskId);
-        
-        if (task == null)
-        {
-            return NotFound("There's no task with this id.");
-        }
-
-        _taskRepository.RemoveEntity(task);
-        _taskRepository.SaveChanges();
-        
-        return Ok("Task deleted successfully.");
+        var result = _taskRepository.DeleteTask(taskId);
+        return result.ToActionResult();
     }
 }

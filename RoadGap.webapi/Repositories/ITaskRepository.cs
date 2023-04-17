@@ -11,4 +11,5 @@ public interface ITaskRepository : IRepository
     public IEnumerable<TaskModel> GetTasksBySearch(string searchParam);
     public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto);
     public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd);
+    public RepositoryResponse<int> DeleteTask(int taskId);
 }
