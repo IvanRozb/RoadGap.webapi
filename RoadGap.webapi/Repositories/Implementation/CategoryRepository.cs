@@ -71,16 +71,4 @@ public class CategoryRepository : ICategoryRepository
 
         return searchedCategories;
     }
-
-    public bool CategoryExists(int categoryId)
-    {
-        return _entityFramework.Category
-            .Any(category => category.CategoryId == categoryId);
-    }
-    
-    public bool StatusExists(int statusId)
-    {
-        return _entityFramework.Status
-            .Any(status => status.StatusId == statusId);
-    }
 }
