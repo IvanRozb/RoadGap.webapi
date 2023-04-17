@@ -32,7 +32,7 @@ public class TaskRepositoryTests
     }
     
     [Test]
-    public void AddEntity_NullEntity_DoesNotAddEntity()
+    public void AddTask_NullEntity_DoesNotAddEntity()
     {
         // Arrange
         var entity = (TaskModel)null;
@@ -47,7 +47,7 @@ public class TaskRepositoryTests
     }
     
     [Test]
-    public void AddEntity_ValidEntity_AddsEntity()
+    public void AddTask_ValidEntity_AddsEntity()
     {
         // Arrange
         var entity = new TaskModel { Title = "Test task" };
@@ -62,7 +62,7 @@ public class TaskRepositoryTests
     }
     
     [Test]
-    public void RemoveEntity_NullEntity_DoesNotRemoveEntity()
+    public void RemoveTask_NullEntity_DoesNotRemoveEntity()
     {
         // Arrange
         var entity = (TaskModel)null;
@@ -75,7 +75,7 @@ public class TaskRepositoryTests
     }
 
     [Test]
-    public void RemoveEntity_ValidEntity_RemovesEntity()
+    public void RemoveTask_ValidEntity_RemovesEntity()
     {
         // Arrange
         var entity = new TaskModel { Title = "Test task" };
@@ -180,7 +180,7 @@ public class TaskRepositoryTests
     }
 
     [Test]
-    public void SaveChanges_SavesChangesToDatabase()
+    public void SaveChanges_SavesChangesToDatabaseAfterAddingTask()
     {
         // Arrange
         var task = new TaskModel { Title = "Test task" };
