@@ -11,77 +11,45 @@ namespace RoadGap.webapi.Controllers;
 public class CategoryController : ControllerBase
 {
     private readonly ICategoryRepository _categoryRepository;
-    private readonly IMapper _mapper;
 
-    public CategoryController(ICategoryRepository categoryRepository, IMapper mapper)
+    public CategoryController(ICategoryRepository categoryRepository)
     {
         _categoryRepository = categoryRepository;
-        _mapper = mapper;
     }
 
     [HttpGet]
     public IActionResult Get([FromQuery] string? searchParam = null)
     {
-        var categories = searchParam is null
-            ? _categoryRepository.GetCategories()
-            : _categoryRepository.GetCategoriesBySearch(searchParam);
-        ;
-        return Ok(categories);
+        var result = 
+            _categoryRepository.GetCategories(searchParam ?? "");
+        return result.ToActionResult();
     }
 
     [HttpGet("{categoryId:int}")]
     public IActionResult Get(int categoryId)
     {
-        var category = _categoryRepository.GetCategoryById(categoryId);
-        if (category == null)
-        {
-            return NotFound("There's no category with this id.");
-        }
-
-        return Ok(category);
+        var result = _categoryRepository.GetCategoryById(categoryId);
+        return result.ToActionResult();
     }
     
     [HttpPut("{categoryId:int}")]
     public IActionResult Edit(int categoryId, [FromBody] CategoryToUpsertDto categoryDto)
     {
-        var categoryDb = _categoryRepository.GetCategoryById(categoryId);
-
-        if (categoryDb == null)
-        {
-            return NotFound("There's no category with this id.");
-        }
-
-        _mapper.Map(categoryDto, categoryDb);
-
-        _categoryRepository.SaveChanges();
-
-        return Ok("Category updated successfully.");
+        var result = _categoryRepository.EditCategory(categoryId, categoryDto);
+        return result.ToActionResult();
     }
 
     [HttpPost]
     public IActionResult Create(CategoryToUpsertDto categoryToAdd)
     {
-        var category = _mapper.Map<Category>(categoryToAdd);
-
-        _categoryRepository.AddEntity(category);
-        _categoryRepository.SaveChanges();
-
-        return Ok("Category created successfully.");
+        var result = _categoryRepository.CreateCategory(categoryToAdd);
+        return result.ToActionResult();
     }
 
     [HttpDelete("{categoryId:int}")]
     public IActionResult Delete(int categoryId)
     {
-        var category = _categoryRepository.GetCategoryById(categoryId);
-        
-        if (category == null)
-        {
-            return NotFound("There's no category with this id.");
-        }
-
-        _categoryRepository.RemoveEntity(category);
-        _categoryRepository.SaveChanges();
-        
-        return Ok("Category deleted successfully.");
+        var result = _categoryRepository.DeleteCategory(categoryId);
+        return result.ToActionResult();
     }
 }
