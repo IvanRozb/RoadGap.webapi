@@ -1,3 +1,5 @@
+using RoadGap.webapi.Dtos;
+using RoadGap.webapi.Models;
 using RoadGap.webapi.Repositories;
 using RoadGap.webapi.Repositories.Implementation;
 
@@ -28,7 +30,13 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddAutoMapper(config =>
+{
+    config.CreateMap<CategoryToUpsertDto, Category>();
+    config.CreateMap<TaskToUpsertDto, TaskModel>();
+});
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 
 var app = builder.Build();
 

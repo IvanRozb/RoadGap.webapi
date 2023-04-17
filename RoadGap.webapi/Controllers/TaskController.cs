@@ -1,7 +1,5 @@
-using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using RoadGap.webapi.Dtos;
-using RoadGap.webapi.Models;
 using RoadGap.webapi.Repositories;
 
 namespace RoadGap.webapi.Controllers;
@@ -11,101 +9,45 @@ namespace RoadGap.webapi.Controllers;
 public class TaskController : ControllerBase
 {
     private readonly ITaskRepository _taskRepository;
-    private readonly IMapper _mapper;
 
     public TaskController(ITaskRepository taskRepository)
     {
         _taskRepository = taskRepository;
-        _mapper = new Mapper(new MapperConfiguration(configurationExpression =>
-        {
-            configurationExpression.CreateMap<TaskToUpsertDto, TaskModel>();
-        }));
     }
 
     [HttpGet]
     public IActionResult Get([FromQuery] string? searchParam = null)
     {
-
-        var tasks = searchParam is null
-            ? _taskRepository.GetTasks()
-            : _taskRepository.GetTasksBySearch(searchParam);
-        ;
-        return Ok(tasks);
+        var result = 
+            _taskRepository.GetTasks(searchParam ?? "");
+        return result.ToActionResult();
     }
 
     [HttpGet("{taskId:int}")]
     public IActionResult Get(int taskId)
     {
-        var task = _taskRepository.GetTaskById(taskId);
-        if (task == null)
-        {
-            return NotFound("There's no task with this id.");
-        }
-
-        return Ok(task);
+        var result = _taskRepository.GetTaskById(taskId);
+        return result.ToActionResult();
     }
     
     [HttpPut("{taskId:int}")]
     public IActionResult Edit(int taskId, [FromBody] TaskToUpsertDto taskDto)
     {
-        if (!_taskRepository.CategoryExists(taskDto.CategoryId))
-        {
-            return BadRequest("Invalid category id.");
-        }
-
-        if (!_taskRepository.StatusExists(taskDto.StatusId))
-        {
-            return BadRequest("Invalid status id.");
-        }
-
-        var taskDb = _taskRepository.GetTaskById(taskId);
-
-        if (taskDb == null)
-        {
-            return NotFound("There's no task with this id.");
-        }
-
-        _mapper.Map(taskDto, taskDb);
-
-        _taskRepository.SaveChanges();
-
-        return Ok("Task updated successfully.");
+        var result = _taskRepository.EditTask(taskId, taskDto);
+        return result.ToActionResult();
     }
 
     [HttpPost]
     public IActionResult Create(TaskToUpsertDto taskToAdd)
     {
-        if (!_taskRepository.CategoryExists(taskToAdd.CategoryId))
-        {
-            return BadRequest("Invalid category id.");
-        }
-
-        if (!_taskRepository.StatusExists(taskToAdd.StatusId))
-        {
-            return BadRequest("Invalid status id.");
-        }
-
-        var task = _mapper.Map<TaskModel>(taskToAdd);
-
-        _taskRepository.AddEntity(task);
-        _taskRepository.SaveChanges();
-
-        return Ok("Task created successfully.");
+        var result = _taskRepository.CreateTask(taskToAdd);
+        return result.ToActionResult();
     }
 
     [HttpDelete("{taskId:int}")]
     public IActionResult Delete(int taskId)
     {
-        var task = _taskRepository.GetTaskById(taskId);
-        
-        if (task == null)
-        {
-            return NotFound("There's no task with this id.");
-        }
-
-        _taskRepository.RemoveEntity(task);
-        _taskRepository.SaveChanges();
-        
-        return Ok("Task deleted successfully.");
+        var result = _taskRepository.DeleteTask(taskId);
+        return result.ToActionResult();
     }
 }
