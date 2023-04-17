@@ -45,42 +45,30 @@ public class TaskController : ControllerBase
     [HttpPut("{taskId:int}")]
     public IActionResult Edit(int taskId, [FromBody] TaskToUpsertDto taskDto)
     {
-        if (!_taskRepository.CategoryExists(taskDto.CategoryId))
+        var result = _taskRepository.EditTask(taskId, taskDto);
+
+        if (result.Success) return Ok(result.Message);
+        if (result.StatusCode == 404)
         {
-            return BadRequest("Invalid category id.");
+            return NotFound(result.Message);
         }
 
-        if (!_taskRepository.StatusExists(taskDto.StatusId))
-        {
-            return BadRequest("Invalid status id.");
-        }
+        return BadRequest(result.Message);
 
-        var taskDb = _taskRepository.GetTaskById(taskId);
-
-        if (taskDb == null)
-        {
-            return NotFound("There's no task with this id.");
-        }
-
-        _mapper.Map(taskDto, taskDb);
-
-        _taskRepository.SaveChanges();
-
-        return Ok("Task updated successfully.");
     }
 
     [HttpPost]
     public IActionResult Create(TaskToUpsertDto taskToAdd)
     {
-        if (!_taskRepository.CategoryExists(taskToAdd.CategoryId))
-        {
-            return BadRequest("Invalid category id.");
-        }
-
-        if (!_taskRepository.StatusExists(taskToAdd.StatusId))
-        {
-            return BadRequest("Invalid status id.");
-        }
+        // if (!_entityChecker.CategoryExists(taskToAdd.CategoryId))
+        // {
+        //     return BadRequest("Invalid category id.");
+        // }
+        //
+        // if (!_entityChecker.StatusExists(taskToAdd.StatusId))
+        // {
+        //     return BadRequest("Invalid status id.");
+        // }
 
         var task = _mapper.Map<TaskModel>(taskToAdd);
 
