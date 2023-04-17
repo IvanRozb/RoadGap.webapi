@@ -20,8 +20,38 @@ public class TaskRepository : Repository, ITaskRepository
         SaveChanges();
     }
 
-    public IEnumerable<TaskModel> GetTasks() =>
-        EntityFramework.Tasks.ToList();
+    public RepositoryResponse<IEnumerable<TaskModel>> GetTasks(string searchParam = "") {
+        try
+        {
+            if (searchParam == "")
+            {
+                RepositoryResponse<IEnumerable<TaskModel>>
+                    .CreateSuccess(EntityFramework.Tasks.ToList(),
+                        "Tasks found successfully.");
+            }
+
+            var keywords = searchParam.ToLower().Split(' ');
+            var tasks = EntityFramework.Tasks;
+            var searchedTasks = new List<TaskModel>();
+
+            foreach (var keyword in keywords)
+            {
+                searchedTasks.AddRange(tasks.Where(task =>
+                        task.Title.ToLower().Contains(keyword) ||
+                        task.Description.ToLower().Contains(keyword))
+                    .ToList());
+            }
+
+            return RepositoryResponse<IEnumerable<TaskModel>>
+                .CreateSuccess(searchedTasks,
+                    "Tasks searched successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<IEnumerable<TaskModel>>
+                .CreateInternalServerError($"An error occurred while getting tasks: {ex.Message}");
+        }
+    }
 
     public RepositoryResponse<TaskModel> GetTaskById(int taskId)
     {
