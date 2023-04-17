@@ -18,7 +18,8 @@ public class TaskController : ControllerBase
     [HttpGet]
     public IActionResult Get([FromQuery] string? searchParam = null)
     {
-        var result = _taskRepository.GetTasks(searchParam ?? "");
+        var result = 
+            _taskRepository.GetTasks(searchParam ?? "");
         return result.ToActionResult();
     }
 
