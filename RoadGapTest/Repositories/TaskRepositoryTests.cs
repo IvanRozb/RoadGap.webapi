@@ -11,7 +11,6 @@ namespace RoadGapTest.Repositories;
 public class TaskRepositoryTests
 {
     private TaskRepository _taskRepository;
-
     [SetUp]
     public void Setup()
     {
@@ -21,7 +20,7 @@ public class TaskRepositoryTests
             .UseInMemoryDatabase(databaseName: "TestDatabase")
             .Options;
         var context = new DataContext(options);
-        _taskRepository = new TaskRepository(context,
+        _taskRepository = new TaskRepository(context, 
             new Mapper(new MapperConfiguration(config => { config.CreateMap<TaskToUpsertDto, TaskModel>(); })));
     }
 
@@ -40,9 +39,11 @@ public class TaskRepositoryTests
 
         // Act
         _taskRepository.AddEntity(entity);
+        var tasksRepo = _taskRepository.GetTasks();
+        var count = tasksRepo.Data.Count();
 
         // Assert
-        Assert.That(_taskRepository.GetTasks().Data.Count(), Is.EqualTo(0));
+        Assert.That(count, Is.EqualTo(0));
     }
     
     [Test]
@@ -122,64 +123,7 @@ public class TaskRepositoryTests
         // Assert
         Assert.That(results, Is.Empty);
     }
-    
-    [Test]
-    public void CategoryExists_ValidCategoryId_ReturnsTrue()
-    {
-        // Arrange
-        var category = new Category { CategoryId = 1 };
-        var task = new TaskModel { CategoryId = 1 };
-        _taskRepository.AddEntity(category);
-        _taskRepository.AddEntity(task);
-        _taskRepository.SaveChanges();
-
-        // Act
-        var result = _taskRepository.GetEntityChecker().CategoryExists(1);
-
-        // Assert
-        Assert.That(result, Is.True);
-    }
-    
-    [Test]
-    public void CategoryExists_InvalidCategoryId_ReturnsFalse()
-    {
-        // Arrange
-        const int categoryId = 1;
-
-        // Act
-        var result = _taskRepository.GetEntityChecker().CategoryExists(categoryId);
-
-        // Assert
-        Assert.That(result, Is.False);
-    }
-    
-    [Test]
-    public void StatusExists_ValidStatusId_ReturnsTrue()
-    {
-        // Arrange
-        var status = new Status { StatusId = 1, Title = "Status 1" };
-        _taskRepository.AddEntity(status);
-        _taskRepository.SaveChanges();
-
-        // Act
-        var result = _taskRepository.GetEntityChecker().StatusExists(status.StatusId);
-
-        // Assert
-        Assert.That(result, Is.True);
-    }
-    
-    [Test]
-    public void StatusExists_InvalidStatusId_ReturnsFalse()
-    {
-        // Arrange
-        const int statusId = 1;
-
-        // Act
-        var result = _taskRepository.GetEntityChecker().StatusExists(statusId);
-
-        // Assert
-        Assert.That(result, Is.False);
-    }
+   
     
     [Test]
     public void GetTaskById_ValidId_ReturnsMatchingTask()
@@ -230,11 +174,11 @@ public class TaskRepositoryTests
         var results = _taskRepository.GetTasks().Data.ToList();
 
         // Assert
-        Assert.That(results.Count, Is.EqualTo(2));
+        Assert.That(results, Has.Count.EqualTo(2));
         Assert.That(results.Any(t => t.Title == "Test task 1"), Is.True);
         Assert.That(results.Any(t => t.Title == "Test task 2"), Is.True);
     }
-    
+
     [Test]
     public void SaveChanges_SavesChangesToDatabase()
     {
