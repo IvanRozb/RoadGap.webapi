@@ -1,4 +1,5 @@
 using AutoMapper;
+using RoadGap.webapi.Data;
 using RoadGap.webapi.Dtos;
 using RoadGap.webapi.Helpers;
 using RoadGap.webapi.Models;
@@ -7,11 +8,14 @@ namespace RoadGap.webapi.Repositories.Implementation;
 
 public class TaskRepository : Repository, ITaskRepository
 {
-    private readonly EntityChecker _entityChecker;
     public TaskRepository(IConfiguration configuration, IMapper mapper) 
-        : base(configuration,mapper)
+        : base(configuration, mapper)
     {
-        _entityChecker = new EntityChecker(EntityFramework);
+    }
+    
+    public TaskRepository(DataContext context, IMapper mapper) 
+        : base(context, mapper)
+    {
     }
 
     public void Dispose()
@@ -72,12 +76,12 @@ public class TaskRepository : Repository, ITaskRepository
     {
         try
         {
-            if (!_entityChecker.CategoryExists(taskDto.CategoryId))
+            if (!EntityChecker.CategoryExists(taskDto.CategoryId))
             {
                 return RepositoryResponse<TaskModel>.CreateBadRequest($"Category with ID {taskDto.CategoryId} not found");
             }
             
-            if (!_entityChecker.StatusExists(taskDto.StatusId))
+            if (!EntityChecker.StatusExists(taskDto.StatusId))
             {
                 return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
             }
@@ -107,12 +111,12 @@ public class TaskRepository : Repository, ITaskRepository
     {
         try
         {
-            if (!_entityChecker.CategoryExists(taskToAdd.CategoryId))
+            if (!EntityChecker.CategoryExists(taskToAdd.CategoryId))
             {
                 return RepositoryResponse<TaskModel>.CreateBadRequest($"Category with ID {taskToAdd.CategoryId} not found");
             }
             
-            if (!_entityChecker.StatusExists(taskToAdd.StatusId))
+            if (!EntityChecker.StatusExists(taskToAdd.StatusId))
             {
                 return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskToAdd.StatusId} not found");
             }
