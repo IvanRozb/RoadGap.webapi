@@ -50,16 +50,23 @@ public class TaskRepository : Repository, ITaskRepository
     }
     public RepositoryResponse<TaskModel> GetTaskById(int taskId)
     {
-        var task = EntityFramework.Tasks
-            .FirstOrDefault(task => task.TaskId == taskId);
-        
-        if (task == null)
+        try
         {
-            return RepositoryResponse<TaskModel>.CreateNotFound($"Task with ID {taskId} not found");
+            var task = EntityFramework.Tasks
+                .FirstOrDefault(task => task.TaskId == taskId);
+
+            if (task == null)
+            {
+                return RepositoryResponse<TaskModel>.CreateNotFound($"Task with ID {taskId} not found");
+            }
+
+            return RepositoryResponse<TaskModel>
+                .CreateSuccess(task, "Task found successfully.");
         }
-        
-        return RepositoryResponse<TaskModel>
-            .CreateSuccess(task, "Task found successfully.");
+        catch (Exception ex)
+        {
+            return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while getting task with ID {taskId}: {ex.Message}");
+        }
     }
     public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto)
     {
@@ -125,18 +132,25 @@ public class TaskRepository : Repository, ITaskRepository
     }
     public RepositoryResponse<int> DeleteTask(int taskId)
     {
-        var response = GetTaskById(taskId);
-        
-        if (!response.Success)
+        try
         {
-            return RepositoryResponse<int>.CreateBadRequest($"Task with ID {taskId} not found");
+            var response = GetTaskById(taskId);
+
+            if (!response.Success)
+            {
+                return RepositoryResponse<int>.CreateBadRequest($"Task with ID {taskId} not found");
+            }
+
+            var task = response.Data;
+
+            RemoveEntity(task);
+            SaveChanges();
+
+            return RepositoryResponse<int>.CreateSuccess(taskId, "Task deleted successfully.");
         }
-
-        var task = response.Data;
-
-        RemoveEntity(task);
-        SaveChanges();
-        
-        return RepositoryResponse<int>.CreateSuccess(taskId, "Task deleted successfully.");
+        catch (Exception ex)
+        {
+            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing task with ID {taskId}: {ex.Message}");
+        }
     }
 }
