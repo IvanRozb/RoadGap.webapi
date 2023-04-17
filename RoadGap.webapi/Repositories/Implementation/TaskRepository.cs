@@ -23,12 +23,18 @@ public class TaskRepository : Repository, ITaskRepository
     public IEnumerable<TaskModel> GetTasks() =>
         EntityFramework.Tasks.ToList();
 
-    public TaskModel? GetTaskById(int taskId)
+    public RepositoryResponse<TaskModel> GetTaskById(int taskId)
     {
         var task = EntityFramework.Tasks
             .FirstOrDefault(task => task.TaskId == taskId);
         
-        return task;
+        if (task == null)
+        {
+            return RepositoryResponse<TaskModel>.CreateNotFound($"Task with ID {taskId} not found");
+        }
+        
+        return RepositoryResponse<TaskModel>
+            .CreateSuccess(task, "Task found successfully.");
     }
 
     public IEnumerable<TaskModel> GetTasksBySearch(string searchParam)
@@ -62,12 +68,14 @@ public class TaskRepository : Repository, ITaskRepository
                 return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
             }
             
-            var task = GetTaskById(taskId);
+            var taskResponse = GetTaskById(taskId);
 
-            if (task == null)
+            if (!taskResponse.Success)
             {
-                return RepositoryResponse<TaskModel>.CreateNotFound($"Task with ID {taskId} not found");
+                return taskResponse;
             }
+
+            var task = taskResponse.Data;
             
             Mapper.Map(taskDto, task);
             task.TaskUpdated = DateTime.Now;

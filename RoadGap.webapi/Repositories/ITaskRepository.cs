@@ -7,7 +7,7 @@ namespace RoadGap.webapi.Repositories;
 public interface ITaskRepository : IRepository
 {
     public IEnumerable<TaskModel> GetTasks();
-    public TaskModel? GetTaskById(int taskId);
+    public RepositoryResponse<TaskModel> GetTaskById(int taskId);
     public IEnumerable<TaskModel> GetTasksBySearch(string searchParam);
     public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto);
 }
