@@ -90,4 +90,31 @@ public class TaskRepository : Repository, ITaskRepository
         }
     }
 
+    public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd)
+    {
+        try
+        {
+            if (!_entityChecker.CategoryExists(taskToAdd.CategoryId))
+            {
+                return RepositoryResponse<TaskModel>.CreateBadRequest($"Category with ID {taskToAdd.CategoryId} not found");
+            }
+            
+            if (!_entityChecker.StatusExists(taskToAdd.StatusId))
+            {
+                return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskToAdd.StatusId} not found");
+            }
+
+            var task = Mapper.Map<TaskModel>(taskToAdd);
+            task.TaskUpdated = DateTime.Now;
+            
+            AddEntity(task);
+            SaveChanges();
+
+            return RepositoryResponse<TaskModel>.CreateSuccess(task, "Task created successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while creating task: {ex.Message}");
+        }
+    }
 }
