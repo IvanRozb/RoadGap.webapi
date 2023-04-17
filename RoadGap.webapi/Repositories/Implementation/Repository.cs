@@ -1,3 +1,4 @@
+using AutoMapper;
 using RoadGap.webapi.Data;
 
 namespace RoadGap.webapi.Repositories.Implementation;
@@ -5,16 +6,14 @@ namespace RoadGap.webapi.Repositories.Implementation;
 public abstract class Repository : IRepository
 {
     protected readonly DataContext EntityFramework;
+    protected readonly IMapper Mapper;
 
-    protected Repository(IConfiguration configuration)
+    protected Repository(IConfiguration configuration, IMapper mapper)
     {
         EntityFramework = new DataContext(configuration);
+        Mapper = mapper;
     }
 
-    protected Repository(DataContext context)
-    {
-        EntityFramework = context;
-    }
     public void SaveChanges()
     {
         if (EntityFramework.SaveChanges() < 0)
