@@ -1,4 +1,5 @@
 using AutoMapper;
+using RoadGap.webapi.Data;
 using RoadGap.webapi.Dtos;
 using RoadGap.webapi.Helpers;
 using RoadGap.webapi.Models;
@@ -11,6 +12,12 @@ public class CategoryRepository : Repository, ICategoryRepository
         : base(configuration, mapper)
     {
     }
+    
+    public CategoryRepository(DataContext context, IMapper mapper) 
+        : base(context, mapper)
+    {
+    }
+    
     public void Dispose()
     {
         EntityFramework.Category.RemoveRange(EntityFramework.Category);
