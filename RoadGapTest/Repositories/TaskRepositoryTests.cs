@@ -1,5 +1,7 @@
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using RoadGap.webapi.Data;
+using RoadGap.webapi.Dtos;
 using RoadGap.webapi.Models;
 using RoadGap.webapi.Repositories.Implementation;
 
@@ -9,7 +11,6 @@ namespace RoadGapTest.Repositories;
 public class TaskRepositoryTests
 {
     private TaskRepository _taskRepository;
-
     [SetUp]
     public void Setup()
     {
@@ -19,7 +20,8 @@ public class TaskRepositoryTests
             .UseInMemoryDatabase(databaseName: "TestDatabase")
             .Options;
         var context = new DataContext(options);
-        _taskRepository = new TaskRepository(context);
+        _taskRepository = new TaskRepository(context, 
+            new Mapper(new MapperConfiguration(config => { config.CreateMap<TaskToUpsertDto, TaskModel>(); })));
     }
 
     [TearDown]
@@ -30,20 +32,22 @@ public class TaskRepositoryTests
     }
     
     [Test]
-    public void AddEntity_NullEntity_DoesNotAddEntity()
+    public void AddTask_NullEntity_DoesNotAddEntity()
     {
         // Arrange
         var entity = (TaskModel)null;
 
         // Act
         _taskRepository.AddEntity(entity);
+        var tasksRepo = _taskRepository.GetTasks();
+        var count = tasksRepo.Data.Count();
 
         // Assert
-        Assert.That(_taskRepository.GetTasks().Count(), Is.EqualTo(0));
+        Assert.That(count, Is.EqualTo(0));
     }
     
     [Test]
-    public void AddEntity_ValidEntity_AddsEntity()
+    public void AddTask_ValidEntity_AddsEntity()
     {
         // Arrange
         var entity = new TaskModel { Title = "Test task" };
@@ -53,25 +57,25 @@ public class TaskRepositoryTests
         _taskRepository.SaveChanges();
 
         // Assert
-        Assert.That(_taskRepository.GetTasks().Count(), Is.EqualTo(1));
-        Assert.That(_taskRepository.GetTasks().Single().Title, Is.EqualTo("Test task"));
+        Assert.That(_taskRepository.GetTasks().Data.Count(), Is.EqualTo(1));
+        Assert.That(_taskRepository.GetTasks().Data.Single().Title, Is.EqualTo("Test task"));
     }
     
     [Test]
-    public void RemoveEntity_NullEntity_DoesNotRemoveEntity()
+    public void RemoveTask_NullEntity_DoesNotRemoveEntity()
     {
         // Arrange
         var entity = (TaskModel)null;
 
         // Act
         _taskRepository.RemoveEntity(entity);
-        var a = _taskRepository.GetTasks().Count();
+        var a = _taskRepository.GetTasks().Data.Count();
         // Assert
         Assert.That(a, Is.EqualTo(0));
     }
 
     [Test]
-    public void RemoveEntity_ValidEntity_RemovesEntity()
+    public void RemoveTask_ValidEntity_RemovesEntity()
     {
         // Arrange
         var entity = new TaskModel { Title = "Test task" };
@@ -83,11 +87,11 @@ public class TaskRepositoryTests
         _taskRepository.SaveChanges();
 
         // Assert
-        Assert.That(_taskRepository.GetTasks().Count(), Is.EqualTo(0));
+        Assert.That(_taskRepository.GetTasks().Data.Count(), Is.EqualTo(0));
     }
     
     [Test]
-    public void GetTasksBySearch_ValidKeyword_ReturnsMatchingTasks()
+    public void GetTasks_ValidKeyword_ReturnsMatchingTasks()
     {
         // Arrange
         var task1 = new TaskModel { Title = "Test task 1", Description = "Test description 1" };
@@ -97,14 +101,14 @@ public class TaskRepositoryTests
         _taskRepository.SaveChanges();
 
         // Act
-        var results = _taskRepository.GetTasksBySearch("test");
+        var results = _taskRepository.GetTasks("test").Data;
 
         // Assert
         Assert.That(results.Count(), Is.EqualTo(2));
     }
     
     [Test]
-    public void GetTasksBySearch_InvalidKeyword_ReturnsEmptyList()
+    public void GetTasks_InvalidKeyword_ReturnsEmptyList()
     {
         // Arrange
         var task1 = new TaskModel { Title = "Test task 1", Description = "Test description 1" };
@@ -114,69 +118,12 @@ public class TaskRepositoryTests
         _taskRepository.SaveChanges();
 
         // Act
-        var results = _taskRepository.GetTasksBySearch("invalid");
+        var results = _taskRepository.GetTasks("invalid").Data;
 
         // Assert
         Assert.That(results, Is.Empty);
     }
-    
-    [Test]
-    public void CategoryExists_ValidCategoryId_ReturnsTrue()
-    {
-        // Arrange
-        var category = new Category { CategoryId = 1 };
-        var task = new TaskModel { CategoryId = 1 };
-        _taskRepository.AddEntity(category);
-        _taskRepository.AddEntity(task);
-        _taskRepository.SaveChanges();
-
-        // Act
-        var result = _taskRepository.CategoryExists(1);
-
-        // Assert
-        Assert.That(result, Is.True);
-    }
-    
-    [Test]
-    public void CategoryExists_InvalidCategoryId_ReturnsFalse()
-    {
-        // Arrange
-        const int categoryId = 1;
-
-        // Act
-        var result = _taskRepository.CategoryExists(categoryId);
-
-        // Assert
-        Assert.That(result, Is.False);
-    }
-    
-    [Test]
-    public void StatusExists_ValidStatusId_ReturnsTrue()
-    {
-        // Arrange
-        var status = new Status { StatusId = 1, Title = "Status 1" };
-        _taskRepository.AddEntity(status);
-        _taskRepository.SaveChanges();
-
-        // Act
-        var result = _taskRepository.StatusExists(status.StatusId);
-
-        // Assert
-        Assert.That(result, Is.True);
-    }
-    
-    [Test]
-    public void StatusExists_InvalidStatusId_ReturnsFalse()
-    {
-        // Arrange
-        const int statusId = 1;
-
-        // Act
-        var result = _taskRepository.StatusExists(statusId);
-
-        // Assert
-        Assert.That(result, Is.False);
-    }
+   
     
     [Test]
     public void GetTaskById_ValidId_ReturnsMatchingTask()
@@ -189,7 +136,7 @@ public class TaskRepositoryTests
         _taskRepository.SaveChanges();
 
         // Act
-        var result = _taskRepository.GetTaskById(task1.TaskId);
+        var result = _taskRepository.GetTaskById(task1.TaskId).Data;
 
         // Assert
         Assert.That(result, Is.Not.Null);
@@ -207,7 +154,7 @@ public class TaskRepositoryTests
         _taskRepository.SaveChanges();
 
         // Act
-        var result = _taskRepository.GetTaskById(-1);
+        var result = _taskRepository.GetTaskById(-1).Data;
 
         // Assert
         Assert.That(result, Is.Null);
@@ -224,16 +171,16 @@ public class TaskRepositoryTests
         _taskRepository.SaveChanges();
 
         // Act
-        var results = _taskRepository.GetTasks();
+        var results = _taskRepository.GetTasks().Data.ToList();
 
         // Assert
-        Assert.That(results.Count(), Is.EqualTo(2));
+        Assert.That(results, Has.Count.EqualTo(2));
         Assert.That(results.Any(t => t.Title == "Test task 1"), Is.True);
         Assert.That(results.Any(t => t.Title == "Test task 2"), Is.True);
     }
-    
+
     [Test]
-    public void SaveChanges_SavesChangesToDatabase()
+    public void SaveChanges_SavesChangesToDatabaseAfterAddingTask()
     {
         // Arrange
         var task = new TaskModel { Title = "Test task" };
