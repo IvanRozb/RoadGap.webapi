@@ -75,4 +75,16 @@ public class RepositoryResponse<T>
             _ => new BadRequestObjectResult(new { error = Message })
         };
     }
+
+
+    public RepositoryResponse<TD> ConvertWithAnotherData<TD>(TD data)
+    {
+        return new RepositoryResponse<TD>
+        {
+            Data = data,
+            Message = Message,
+            StatusCode = StatusCode,
+            Success = Success
+        };;
+    }
 }

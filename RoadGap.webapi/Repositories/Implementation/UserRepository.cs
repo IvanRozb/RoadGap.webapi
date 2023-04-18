@@ -77,25 +77,5 @@ public class UserRepository : Repository, IUserRepository
 
     public RepositoryResponse<int> DeleteUser(int userId)
     {
-        try
-        {
-            var response = GetUserById(userId);
-
-            if (!response.Success)
-            {
-                return RepositoryResponse<int>.CreateBadRequest($"User with ID {userId} not found");
-            }
-
-            var user = response.Data;
-
-            RemoveEntity(user);
-            SaveChanges();
-
-            return RepositoryResponse<int>.CreateSuccess(userId, "User deleted successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing user with ID {userId}: {ex.Message}");
-        }
-    }
-}
+        return DeleteEntity<User>(userId);
+    }}

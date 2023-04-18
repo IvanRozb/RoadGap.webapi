@@ -88,26 +88,5 @@ public class TaskRepository : Repository, ITaskRepository
 
     public RepositoryResponse<int> DeleteTask(int taskId)
     {
-        try
-        {
-            var response = GetTaskById(taskId);
-
-            if (!response.Success)
-            {
-                return RepositoryResponse<int>.CreateBadRequest($"Task with ID {taskId} not found");
-            }
-
-            var task = response.Data;
-
-            RemoveEntity(task);
-            SaveChanges();
-
-            return RepositoryResponse<int>.CreateSuccess(taskId, "Task deleted successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<int>.CreateInternalServerError(
-                $"An error occurred while editing task with ID {taskId}: {ex.Message}");
-        }
-    }
-}
+        return DeleteEntity<Task>(taskId);
+    }}
