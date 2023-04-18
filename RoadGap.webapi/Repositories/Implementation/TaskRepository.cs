@@ -66,34 +66,24 @@ public class TaskRepository : Repository, ITaskRepository
             entity.TaskUpdated = DateTime.Now;
         });
     }
+
     public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd)
     {
-        try
+        var validationChecks = new Func<TaskToUpsertDto, bool>[]
         {
-            if (!EntityChecker.CategoryExists(taskToAdd.CategoryId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest(
-                    $"Category with ID {taskToAdd.CategoryId} not found");
-            }
+            x => !EntityChecker.CategoryExists(x.CategoryId),
+            x => !EntityChecker.StatusExists(x.StatusId)
+        };
 
-            if (!EntityChecker.StatusExists(taskToAdd.StatusId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskToAdd.StatusId} not found");
-            }
-
-            var task = Mapper.Map<TaskModel>(taskToAdd);
-            task.TaskUpdated = DateTime.Now;
-
-            AddEntity(task);
-            SaveChanges();
-
-            return RepositoryResponse<TaskModel>.CreateSuccess(task, "Task created successfully.");
-        }
-        catch (Exception ex)
+        var validationErrorMessages = new[]
         {
-            return RepositoryResponse<TaskModel>.CreateInternalServerError(
-                $"An error occurred while creating task: {ex.Message}");
-        }
+            $"Category with ID {taskToAdd.CategoryId} not found",
+            $"Status with ID {taskToAdd.StatusId} not found"
+        };
+
+        return CreateEntity<TaskModel, TaskToUpsertDto>(taskToAdd,
+            validationChecks, validationErrorMessages);
+
     }
 
     public RepositoryResponse<int> DeleteTask(int taskId)

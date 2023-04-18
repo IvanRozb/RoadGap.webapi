@@ -52,19 +52,7 @@ public class CategoryRepository : Repository, ICategoryRepository
     }
     public RepositoryResponse<Category> CreateCategory(CategoryToUpsertDto categoryToAdd)
     {
-        try
-        {
-            var category = Mapper.Map<Category>(categoryToAdd);
-            
-            AddEntity(category);
-            SaveChanges();
-
-            return RepositoryResponse<Category>.CreateSuccess(category, "Category created successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<Category>.CreateInternalServerError($"An error occurred while creating category: {ex.Message}");
-        }
+        return CreateEntity<Category, CategoryToUpsertDto>(categoryToAdd);
     }
     public RepositoryResponse<int> DeleteCategory(int categoryId)
     {
