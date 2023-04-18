@@ -2,11 +2,10 @@ namespace RoadGap.webapi.Dtos;
 
 public class TaskToUpsertDto
 {
-    public int CategoryId { get; set; }
-    public int StatusId { get; set; }
-    public string Title { get; set; } = "";
-    public string Description { get; set; } = "";
+    public int CategoryId { get; init; }
+    public int StatusId { get; init; }
+    public string Title { get; init; } = "";
+    public string Description { get; init; } = "";
     public DateTime? StartTime { get; set; }
     public DateTime? Deadline { get; set; }
-    public DateTime? TaskUpdated { get; set; }
 }
