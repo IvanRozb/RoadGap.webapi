@@ -48,27 +48,7 @@ public class CategoryRepository : Repository, ICategoryRepository
     }
     public RepositoryResponse<Category> EditCategory(int categoryId, CategoryToUpsertDto categoryDto)
     {
-        try
-        {
-            var categoryResponse = GetCategoryById(categoryId);
-
-            if (!categoryResponse.Success)
-            {
-                return categoryResponse;
-            }
-
-            var category = categoryResponse.Data;
-            
-            Mapper.Map(categoryDto, category);
-
-            EntityFramework.SaveChanges();
-
-            return RepositoryResponse<Category>.CreateSuccess(category, "Category updated successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<Category>.CreateInternalServerError($"An error occurred while editing category with ID {categoryId}: {ex.Message}");
-        }
+        return EditEntity(categoryId, categoryDto, GetCategoryById);
     }
     public RepositoryResponse<Category> CreateCategory(CategoryToUpsertDto categoryToAdd)
     {

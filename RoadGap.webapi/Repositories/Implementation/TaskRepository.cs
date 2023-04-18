@@ -50,42 +50,22 @@ public class TaskRepository : Repository, ITaskRepository
 
     public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto)
     {
-        try
+        if (!EntityChecker.CategoryExists(taskDto.CategoryId))
         {
-            if (!EntityChecker.CategoryExists(taskDto.CategoryId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest(
-                    $"Category with ID {taskDto.CategoryId} not found");
-            }
-
-            if (!EntityChecker.StatusExists(taskDto.StatusId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
-            }
-
-            var taskResponse = GetTaskById(taskId);
-
-            if (!taskResponse.Success)
-            {
-                return taskResponse;
-            }
-
-            var task = taskResponse.Data;
-
-            Mapper.Map(taskDto, task);
-            task.TaskUpdated = DateTime.Now;
-
-            EntityFramework.SaveChanges();
-
-            return RepositoryResponse<TaskModel>.CreateSuccess(task, "Task updated successfully.");
+            return RepositoryResponse<TaskModel>.CreateBadRequest(
+                $"Category with ID {taskDto.CategoryId} not found");
         }
-        catch (Exception ex)
+
+        if (!EntityChecker.StatusExists(taskDto.StatusId))
         {
-            return RepositoryResponse<TaskModel>.CreateInternalServerError(
-                $"An error occurred while editing task with ID {taskId}: {ex.Message}");
+            return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
         }
+        
+        return EditEntity(taskId, taskDto, GetTaskById, (dto, entity) => {
+            Mapper.Map(dto, entity);
+            entity.TaskUpdated = DateTime.Now;
+        });
     }
-
     public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd)
     {
         try
