@@ -33,53 +33,53 @@ public abstract class Repository : IRepository
             throw new Exception("Failed to save changes to database");
     }
 
-    public void AddEntity<T>(T entity)
+    public void AddEntity<TEntity>(TEntity entity)
     {
         if (entity == null) return;
         EntityFramework.Add(entity);
     }
     
-    public void RemoveEntity<T>(T entity)
+    public void RemoveEntity<TEntity>(TEntity entity)
     {
         if (entity == null) return;
         EntityFramework.Remove(entity);
     }
 
-    protected RepositoryResponse<IEnumerable<T>> SearchEntities<T>(
-        Func<T, bool> searchPredicate,
+    protected RepositoryResponse<IEnumerable<TEntity>> SearchEntities<TEntity>(
+        Func<TEntity, bool> searchPredicate,
         string successMessage,
         string errorMessage)
-        where T : class
+        where TEntity : class
     {
         try
         {
-            var entities = EntityFramework.Set<T>()
+            var entities = EntityFramework.Set<TEntity>()
                 .AsEnumerable().Where(searchPredicate).ToList();
 
-            return RepositoryResponse<IEnumerable<T>>
+            return RepositoryResponse<IEnumerable<TEntity>>
                 .CreateSuccess(entities, successMessage);
         }
         catch (Exception ex)
         {
-            return RepositoryResponse<IEnumerable<T>>
+            return RepositoryResponse<IEnumerable<TEntity>>
                 .CreateInternalServerError($"{errorMessage}: {ex.Message}");
         }
     }
 
-    protected RepositoryResponse<T> GetEntityById<T>(int id) where T : class
+    protected RepositoryResponse<TEntity> GetEntityById<TEntity>(int id) where TEntity : class
     {
         try
         {
-            var entity = EntityFramework.Set<T>().Find(id);
+            var entity = EntityFramework.Set<TEntity>().Find(id);
 
             return entity == null
-                ? RepositoryResponse<T>.CreateNotFound($"{typeof(T).Name} with ID {id} not found")
-                : RepositoryResponse<T>.CreateSuccess(entity, $"{typeof(T).Name} found successfully.");
+                ? RepositoryResponse<TEntity>.CreateNotFound($"{typeof(TEntity).Name} with ID {id} not found")
+                : RepositoryResponse<TEntity>.CreateSuccess(entity, $"{typeof(TEntity).Name} found successfully.");
         }
         catch (Exception ex)
         {
-            return RepositoryResponse<T>.CreateInternalServerError(
-                $"An error occurred while getting {typeof(T).Name} with ID {id}: {ex.Message}");
+            return RepositoryResponse<TEntity>.CreateInternalServerError(
+                $"An error occurred while getting {typeof(TEntity).Name} with ID {id}: {ex.Message}");
         }
     }
 
@@ -114,10 +114,10 @@ public abstract class Repository : IRepository
         }
     }
 
-    protected RepositoryResponse<T> CreateEntity<T, TD>(TD entityToAdd, Func<TD, bool>[]? validationChecks = null,
+    protected RepositoryResponse<TEntity> CreateEntity<TEntity, TEntityDto>(TEntityDto entityToAdd, Func<TEntityDto, bool>[]? validationChecks = null,
         string[]? errorMessages = null)
-        where T : class
-        where TD : class
+        where TEntity : class
+        where TEntityDto : class
     {
         try
         {
@@ -131,22 +131,22 @@ public abstract class Repository : IRepository
                 {
                     if (validationChecks[i](entityToAdd))
                     {
-                        return RepositoryResponse<T>.CreateConflict(errorMessages[i]);
+                        return RepositoryResponse<TEntity>.CreateConflict(errorMessages[i]);
                     }
                 }
             }
 
-            var entity = Mapper.Map<T>(entityToAdd);
+            var entity = Mapper.Map<TEntity>(entityToAdd);
 
             AddEntity(entity);
             SaveChanges();
 
-            return RepositoryResponse<T>.CreateSuccess(entity, $"{typeof(T).Name} created successfully.");
+            return RepositoryResponse<TEntity>.CreateSuccess(entity, $"{typeof(TEntity).Name} created successfully.");
         }
         catch (Exception ex)
         {
-            return RepositoryResponse<T>.CreateInternalServerError(
-                $"An error occurred while creating {typeof(T).Name}: {ex.Message}");
+            return RepositoryResponse<TEntity>.CreateInternalServerError(
+                $"An error occurred while creating {typeof(TEntity).Name}: {ex.Message}");
         }
     }
 
