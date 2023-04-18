@@ -37,9 +37,7 @@ public class StatusRepository : Repository, IStatusRepository
 
     public RepositoryResponse<Status> EditStatus(int statusId, StatusToUpsertDto statusDto)
     {
-        return EditEntity(statusId, statusDto, GetStatusById, (dto, entity) => {
-            Mapper.Map(dto, entity);
-        });
+        return EditEntity(statusId, statusDto, GetStatusById);
     }
 
     public RepositoryResponse<Status> CreateStatus(StatusToUpsertDto statusToAdd)
