@@ -44,37 +44,48 @@ public class UserRepository : Repository, IUserRepository
 
     public RepositoryResponse<User> EditUser(int userId, UserToUpsertDto userDto)
     {
-        try
+        // try
+        // {
+        //     if (EntityChecker.UserExistsWithEmail(userDto.Email))
+        //     {
+        //         return RepositoryResponse<User>.CreateConflict("The email is already taken!");
+        //     }
+        //     
+        //     if (EntityChecker.UserExistsWithUserName(userDto.UserName))
+        //     {
+        //         return RepositoryResponse<User>.CreateConflict("The userName is already taken!");
+        //     }
+        //     
+        //     var userResponse = GetUserById(userId);
+        //
+        //     if (!userResponse.Success)
+        //     {
+        //         return userResponse;
+        //     }
+        //
+        //     var user = userResponse.Data;
+        //     
+        //     Mapper.Map(userDto, user);
+        //
+        //     EntityFramework.SaveChanges();
+        //
+        //     return RepositoryResponse<User>.CreateSuccess(user, "User updated successfully.");
+        // }
+        // catch (Exception ex)
+        // {
+        //     return RepositoryResponse<User>.CreateInternalServerError($"An error occurred while editing user with ID {userId}: {ex.Message}");
+        // }
+        if (EntityChecker.UserExistsWithEmail(userDto.Email))
         {
-            if (EntityChecker.UserExistsWithEmail(userDto.Email))
-            {
-                return RepositoryResponse<User>.CreateConflict("The email is already taken!");
-            }
-            
-            if (EntityChecker.UserExistsWithUserName(userDto.UserName))
-            {
-                return RepositoryResponse<User>.CreateConflict("The userName is already taken!");
-            }
-            
-            var userResponse = GetUserById(userId);
-
-            if (!userResponse.Success)
-            {
-                return userResponse;
-            }
-
-            var user = userResponse.Data;
-            
-            Mapper.Map(userDto, user);
-
-            EntityFramework.SaveChanges();
-
-            return RepositoryResponse<User>.CreateSuccess(user, "User updated successfully.");
+            return RepositoryResponse<User>.CreateConflict("The email is already taken!");
         }
-        catch (Exception ex)
+            
+        if (EntityChecker.UserExistsWithUserName(userDto.UserName))
         {
-            return RepositoryResponse<User>.CreateInternalServerError($"An error occurred while editing user with ID {userId}: {ex.Message}");
+            return RepositoryResponse<User>.CreateConflict("The userName is already taken!");
         }
+        
+        return EditEntity(userId, userDto, GetUserById);
     }
 
     public RepositoryResponse<User> CreateUser(UserToUpsertDto userToAdd)

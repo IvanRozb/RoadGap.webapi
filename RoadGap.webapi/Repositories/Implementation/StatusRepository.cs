@@ -34,31 +34,14 @@ public class StatusRepository : Repository, IStatusRepository
     {
         return GetEntityById<Status>(statusId);
     }
-    
+
     public RepositoryResponse<Status> EditStatus(int statusId, StatusToUpsertDto statusDto)
     {
-        try
-        {
-            var statusResponse = GetStatusById(statusId);
-
-            if (!statusResponse.Success)
-            {
-                return statusResponse;
-            }
-
-            var status = statusResponse.Data;
-            
-            Mapper.Map(statusDto, status);
-
-            EntityFramework.SaveChanges();
-
-            return RepositoryResponse<Status>.CreateSuccess(status, "Status updated successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<Status>.CreateInternalServerError($"An error occurred while editing status with ID {statusId}: {ex.Message}");
-        }
+        return EditEntity(statusId, statusDto, GetStatusById, (dto, entity) => {
+            Mapper.Map(dto, entity);
+        });
     }
+
     public RepositoryResponse<Status> CreateStatus(StatusToUpsertDto statusToAdd)
     {
         try

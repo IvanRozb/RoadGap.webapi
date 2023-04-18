@@ -22,6 +22,28 @@ public abstract class Repository : IRepository
         Mapper = mapper;
         EntityChecker = new EntityChecker(EntityFramework);
     }
+    public DataContext GetDataContext()
+    {
+        return EntityFramework;
+    }
+
+    public void SaveChanges()
+    {
+        if (EntityFramework.SaveChanges() < 0)
+            throw new Exception("Failed to save changes to database");
+    }
+
+    public void AddEntity<T>(T entity)
+    {
+        if (entity == null) return;
+        EntityFramework.Add(entity);
+    }
+    
+    public void RemoveEntity<T>(T entity)
+    {
+        if (entity == null) return;
+        EntityFramework.Remove(entity);
+    }
 
     protected RepositoryResponse<IEnumerable<T>> SearchEntities<T>(
         Func<T, bool> searchPredicate, 
@@ -61,26 +83,34 @@ public abstract class Repository : IRepository
         }
     }
 
-    public DataContext GetDataContext()
+    protected RepositoryResponse<TEntity> EditEntity<TEntity, TEntityDto>(int entityId, TEntityDto entityDto,
+        Func<int, RepositoryResponse<TEntity>> getEntityById, Action<TEntityDto, TEntity>? mapEntityDtoToEntity = null)
+        where TEntity : class
     {
-        return EntityFramework;
-    }
+        try
+        {
+            var entityResponse = getEntityById(entityId);
 
-    public void SaveChanges()
-    {
-        if (EntityFramework.SaveChanges() < 0)
-            throw new Exception("Failed to save changes to database");
-    }
+            if (!entityResponse.Success)
+            {
+                return entityResponse;
+            }
 
-    public void AddEntity<T>(T entity)
-    {
-        if (entity == null) return;
-        EntityFramework.Add(entity);
-    }
-    
-    public void RemoveEntity<T>(T entity)
-    {
-        if (entity == null) return;
-        EntityFramework.Remove(entity);
+            var entity = entityResponse.Data;
+
+            if (mapEntityDtoToEntity is not null)
+                mapEntityDtoToEntity(entityDto, entity);
+            else
+                Mapper.Map(entityDto, entity);
+
+            EntityFramework.SaveChanges();
+
+            return RepositoryResponse<TEntity>.CreateSuccess(entity, $"{typeof(TEntity).Name} updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<TEntity>.CreateInternalServerError(
+                $"An error occurred while editing {typeof(TEntity).Name} with ID {entityId}: {ex.Message}");
+        }
     }
 }
