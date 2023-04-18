@@ -22,12 +22,27 @@ public abstract class Repository : IRepository
         Mapper = mapper;
         EntityChecker = new EntityChecker(EntityFramework);
     }
-    
-    public EntityChecker GetEntityChecker()
-    {
-        return EntityChecker;
-    }
 
+    protected RepositoryResponse<IEnumerable<T>> SearchEntities<T>(
+        Func<T, bool> searchPredicate, 
+        string successMessage, 
+        string errorMessage)
+        where T : class
+    {
+        try
+        {
+            var entities = EntityFramework.Set<T>()
+                .AsEnumerable().Where(searchPredicate).ToList();
+
+            return RepositoryResponse<IEnumerable<T>>
+                .CreateSuccess(entities, successMessage);
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<IEnumerable<T>>
+                .CreateInternalServerError($"{errorMessage}: {ex.Message}");
+        }
+    }
     public DataContext GetDataContext()
     {
         return EntityFramework;
