@@ -42,26 +42,9 @@ public class CategoryRepository : Repository, ICategoryRepository
         return SearchEntities((Func<Category, bool>)SearchPredicate, "Categories searched successfully.",
             "An error occurred while getting categories.");
     }
-
     public RepositoryResponse<Category> GetCategoryById(int categoryId)
     {
-        try
-        {
-            var category = EntityFramework.Category
-                .FirstOrDefault(category => category.CategoryId == categoryId);
-
-            if (category == null)
-            {
-                return RepositoryResponse<Category>.CreateNotFound($"Category with ID {categoryId} not found");
-            }
-
-            return RepositoryResponse<Category>
-                .CreateSuccess(category, "Category found successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<Category>.CreateInternalServerError($"An error occurred while getting category with ID {categoryId}: {ex.Message}");
-        }
+        return GetEntityById<Category>(categoryId);
     }
     public RepositoryResponse<Category> EditCategory(int categoryId, CategoryToUpsertDto categoryDto)
     {

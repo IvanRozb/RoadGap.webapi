@@ -45,24 +45,7 @@ public class TaskRepository : Repository, ITaskRepository
 
     public RepositoryResponse<TaskModel> GetTaskById(int taskId)
     {
-        try
-        {
-            var task = EntityFramework.Tasks
-                .FirstOrDefault(task => task.TaskId == taskId);
-
-            if (task == null)
-            {
-                return RepositoryResponse<TaskModel>.CreateNotFound($"Task with ID {taskId} not found");
-            }
-
-            return RepositoryResponse<TaskModel>
-                .CreateSuccess(task, "Task found successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<TaskModel>.CreateInternalServerError(
-                $"An error occurred while getting task with ID {taskId}: {ex.Message}");
-        }
+        return GetEntityById<TaskModel>(taskId);
     }
 
     public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto)
