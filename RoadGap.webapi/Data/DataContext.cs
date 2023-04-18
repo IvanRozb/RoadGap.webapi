@@ -14,6 +14,8 @@ public class DataContext : DbContext
     public DataContext(DbContextOptions<DataContext> options) : base(options)
     {
     }
+    
+    public virtual DbSet<User> Users { get; set; }
     public virtual DbSet<TaskModel> Tasks { get; set; }
     public virtual DbSet<Category> Category { get; set; }
     public virtual DbSet<Status> Status { get; set; }
@@ -28,11 +30,17 @@ public class DataContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>()
+            .ToTable("Users")
+            .HasKey(u => u.UserId);
+        
         modelBuilder.Entity<TaskModel>()
             .ToTable("Tasks")
             .HasKey(t => t.TaskId);
+        
         modelBuilder.Entity<Category>()
             .HasKey(t => t.CategoryId);
+        
         modelBuilder.Entity<Status>()
             .HasKey(t => t.StatusId);
     }
