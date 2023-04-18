@@ -50,21 +50,88 @@ public class UserRepository : Repository, IUserRepository
 
     public RepositoryResponse<User> GetUserById(int userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var user = EntityFramework.Users
+                .FirstOrDefault(user => user.UserId == userId);
+
+            if (user == null)
+            {
+                return RepositoryResponse<User>.CreateNotFound($"User with ID {userId} not found");
+            }
+
+            return RepositoryResponse<User>
+                .CreateSuccess(user, "User found successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<User>.CreateInternalServerError($"An error occurred while getting user with ID {userId}: {ex.Message}");
+        }
     }
 
     public RepositoryResponse<User> EditUser(int userId, UserToUpsertDto userDto)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var userResponse = GetUserById(userId);
+
+            if (!userResponse.Success)
+            {
+                return userResponse;
+            }
+
+            var user = userResponse.Data;
+            
+            Mapper.Map(userDto, user);
+
+            EntityFramework.SaveChanges();
+
+            return RepositoryResponse<User>.CreateSuccess(user, "User updated successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<User>.CreateInternalServerError($"An error occurred while editing user with ID {userId}: {ex.Message}");
+        }
     }
 
     public RepositoryResponse<User> CreateUser(UserToUpsertDto userToAdd)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var user = Mapper.Map<User>(userToAdd);
+            
+            AddEntity(user);
+            SaveChanges();
+
+            return RepositoryResponse<User>.CreateSuccess(user, "User created successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<User>.CreateInternalServerError($"An error occurred while creating user: {ex.Message}");
+        }
     }
 
     public RepositoryResponse<int> DeleteUser(int userId)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var response = GetUserById(userId);
+
+            if (!response.Success)
+            {
+                return RepositoryResponse<int>.CreateBadRequest($"User with ID {userId} not found");
+            }
+
+            var user = response.Data;
+
+            RemoveEntity(user);
+            SaveChanges();
+
+            return RepositoryResponse<int>.CreateSuccess(userId, "User deleted successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing user with ID {userId}: {ex.Message}");
+        }
     }
 }
