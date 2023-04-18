@@ -174,13 +174,16 @@ public class CategoryRepositoryTests
     }
 
     [Test]
-    public void DeleteCategory_NonExistingCategoryId_ReturnsBadRequest()
+    public void DeleteCategory_NonExistingCategoryId_ReturnsNotFound()
     {
         const int nonExistingId = 99;
         var result = _categoryRepository
             .DeleteCategory(nonExistingId);
         
-        Assert.That(result.Success, Is.False);
-        Assert.That(result.StatusCode, Is.EqualTo(400));
+        Assert.Multiple(() =>
+        {
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.StatusCode, Is.EqualTo(404));
+        });
     }
 }

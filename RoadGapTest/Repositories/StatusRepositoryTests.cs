@@ -158,7 +158,7 @@ public class StatusRepositoryTests
     }
     
     [Test]
-    public void DeleteStatus_NonExistingStatusId_ReturnsBadRequest()
+    public void DeleteStatus_NonExistingStatusId_ReturnsNotFound()
     {
         const int nonExistingStatusId = 99;
         
@@ -167,7 +167,7 @@ public class StatusRepositoryTests
         Assert.Multiple(() =>
         {
             Assert.That(result.Success, Is.False);
-            Assert.That(result.StatusCode, Is.EqualTo(400));
+            Assert.That(result.StatusCode, Is.EqualTo(404));
         });
     }
 }
