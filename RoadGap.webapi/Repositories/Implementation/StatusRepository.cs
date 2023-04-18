@@ -1,4 +1,5 @@
 using AutoMapper;
+using RoadGap.webapi.Data;
 using RoadGap.webapi.Dtos;
 using RoadGap.webapi.Helpers;
 using RoadGap.webapi.Models;
@@ -9,6 +10,11 @@ public class StatusRepository : Repository, IStatusRepository
 {
     public StatusRepository(IConfiguration configuration, IMapper mapper)
         : base(configuration, mapper)
+    {
+    }
+    
+    public StatusRepository(DataContext context, IMapper mapper) 
+        : base(context, mapper)
     {
     }
     
