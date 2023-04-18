@@ -32,11 +32,13 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAutoMapper(config =>
 {
+    config.CreateMap<UserToUpsertDto, User>();
     config.CreateMap<StatusToUpsertDto, Status>();
     config.CreateMap<CategoryToUpsertDto, Category>();
     config.CreateMap<TaskToUpsertDto, TaskModel>();
 });
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IStatusRepository, StatusRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
