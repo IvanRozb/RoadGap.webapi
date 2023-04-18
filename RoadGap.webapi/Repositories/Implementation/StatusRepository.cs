@@ -48,25 +48,5 @@ public class StatusRepository : Repository, IStatusRepository
     }
     public RepositoryResponse<int> DeleteStatus(int statusId)
     {
-        try
-        {
-            var response = GetStatusById(statusId);
-
-            if (!response.Success)
-            {
-                return RepositoryResponse<int>.CreateBadRequest($"Status with ID {statusId} not found");
-            }
-
-            var status = response.Data;
-
-            RemoveEntity(status);
-            SaveChanges();
-
-            return RepositoryResponse<int>.CreateSuccess(statusId, "Status deleted successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing status with ID {statusId}: {ex.Message}");
-        }
-    }
-}
+        return DeleteEntity<Status>(statusId);
+    }}

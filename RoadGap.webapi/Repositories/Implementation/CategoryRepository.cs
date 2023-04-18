@@ -56,25 +56,6 @@ public class CategoryRepository : Repository, ICategoryRepository
     }
     public RepositoryResponse<int> DeleteCategory(int categoryId)
     {
-        try
-        {
-            var response = GetCategoryById(categoryId);
-
-            if (!response.Success)
-            {
-                return RepositoryResponse<int>.CreateBadRequest($"Category with ID {categoryId} not found");
-            }
-
-            var category = response.Data;
-
-            RemoveEntity(category);
-            SaveChanges();
-
-            return RepositoryResponse<int>.CreateSuccess(categoryId, "Category deleted successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing category with ID {categoryId}: {ex.Message}");
-        }
+        return DeleteEntity<Category>(categoryId);
     }
 }

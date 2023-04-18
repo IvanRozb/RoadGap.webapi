@@ -16,12 +16,14 @@ public abstract class Repository : IRepository
         Mapper = mapper;
         EntityChecker = new EntityChecker(EntityFramework);
     }
+
     protected Repository(DataContext context, IMapper mapper)
     {
         EntityFramework = context;
         Mapper = mapper;
         EntityChecker = new EntityChecker(EntityFramework);
     }
+
     public DataContext GetDataContext()
     {
         return EntityFramework;
@@ -38,7 +40,7 @@ public abstract class Repository : IRepository
         if (entity == null) return;
         EntityFramework.Add(entity);
     }
-    
+
     public void RemoveEntity<TEntity>(TEntity entity)
     {
         if (entity == null) return;
@@ -66,7 +68,8 @@ public abstract class Repository : IRepository
         }
     }
 
-    protected RepositoryResponse<TEntity> GetEntityById<TEntity>(int id) where TEntity : class
+    protected RepositoryResponse<TEntity> GetEntityById<TEntity>(int id)
+        where TEntity : class
     {
         try
         {
@@ -83,8 +86,10 @@ public abstract class Repository : IRepository
         }
     }
 
-    protected RepositoryResponse<TEntity> EditEntity<TEntity, TEntityDto>(int entityId, TEntityDto entityDto,
-        Func<int, RepositoryResponse<TEntity>> getEntityById, Action<TEntityDto, TEntity>? mapEntityDtoToEntity = null)
+    protected RepositoryResponse<TEntity> EditEntity<TEntity, TEntityDto>(int entityId,
+        TEntityDto entityDto,
+        Func<int, RepositoryResponse<TEntity>> getEntityById,
+        Action<TEntityDto, TEntity>? mapEntityDtoToEntity = null)
         where TEntity : class
     {
         try
@@ -114,7 +119,8 @@ public abstract class Repository : IRepository
         }
     }
 
-    protected RepositoryResponse<TEntity> CreateEntity<TEntity, TEntityDto>(TEntityDto entityToAdd, Func<TEntityDto, bool>[]? validationChecks = null,
+    protected RepositoryResponse<TEntity> CreateEntity<TEntity, TEntityDto>(TEntityDto entityToAdd,
+        Func<TEntityDto, bool>[]? validationChecks = null,
         string[]? errorMessages = null)
         where TEntity : class
         where TEntityDto : class
@@ -124,7 +130,7 @@ public abstract class Repository : IRepository
             if (validationChecks is not null)
             {
                 errorMessages ??= Enumerable
-                    .Repeat("Validation failed", validationChecks.Length)
+                    .Repeat("Validation failed!", validationChecks.Length)
                     .ToArray();
 
                 for (var i = 0; i < validationChecks.Length; i++)
@@ -147,6 +153,31 @@ public abstract class Repository : IRepository
         {
             return RepositoryResponse<TEntity>.CreateInternalServerError(
                 $"An error occurred while creating {typeof(TEntity).Name}: {ex.Message}");
+        }
+    }
+    
+    protected RepositoryResponse<int> DeleteEntity<T>(int entityId) 
+        where T : class
+    {
+        try
+        {
+            var response = GetEntityById<T>(entityId);
+
+            if (!response.Success)
+            {
+                return response.ConvertWithAnotherData(entityId);
+            }
+
+            var entity = response.Data;
+
+            RemoveEntity(entity);
+            SaveChanges();
+
+            return RepositoryResponse<int>.CreateSuccess(entityId, $"{typeof(T).Name} deleted successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing {typeof(T).Name} with ID {entityId}: {ex.Message}");
         }
     }
 
