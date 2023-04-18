@@ -43,6 +43,24 @@ public abstract class Repository : IRepository
                 .CreateInternalServerError($"{errorMessage}: {ex.Message}");
         }
     }
+
+    protected RepositoryResponse<T> GetEntityById<T>(int id) where T : class
+    {
+        try
+        {
+            var entity = EntityFramework.Set<T>().Find(id);
+
+            return entity == null
+                ? RepositoryResponse<T>.CreateNotFound($"{typeof(T).Name} with ID {id} not found")
+                : RepositoryResponse<T>.CreateSuccess(entity, $"{typeof(T).Name} found successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<T>.CreateInternalServerError(
+                $"An error occurred while getting {typeof(T).Name} with ID {id}: {ex.Message}");
+        }
+    }
+
     public DataContext GetDataContext()
     {
         return EntityFramework;

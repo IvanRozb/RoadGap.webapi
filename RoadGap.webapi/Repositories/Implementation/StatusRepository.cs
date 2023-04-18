@@ -32,23 +32,7 @@ public class StatusRepository : Repository, IStatusRepository
     }
     public RepositoryResponse<Status> GetStatusById(int statusId)
     {
-        try
-        {
-            var status = EntityFramework.Status
-                .FirstOrDefault(status => status.StatusId == statusId);
-
-            if (status == null)
-            {
-                return RepositoryResponse<Status>.CreateNotFound($"Status with ID {statusId} not found");
-            }
-
-            return RepositoryResponse<Status>
-                .CreateSuccess(status, "Status found successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<Status>.CreateInternalServerError($"An error occurred while getting status with ID {statusId}: {ex.Message}");
-        }
+        return GetEntityById<Status>(statusId);
     }
     
     public RepositoryResponse<Status> EditStatus(int statusId, StatusToUpsertDto statusDto)

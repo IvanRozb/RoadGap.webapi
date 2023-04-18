@@ -39,23 +39,7 @@ public class UserRepository : Repository, IUserRepository
 
     public RepositoryResponse<User> GetUserById(int userId)
     {
-        try
-        {
-            var user = EntityFramework.Users
-                .FirstOrDefault(user => user.UserId == userId);
-
-            if (user == null)
-            {
-                return RepositoryResponse<User>.CreateNotFound($"User with ID {userId} not found");
-            }
-
-            return RepositoryResponse<User>
-                .CreateSuccess(user, "User found successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<User>.CreateInternalServerError($"An error occurred while getting user with ID {userId}: {ex.Message}");
-        }
+        return GetEntityById<User>(userId);
     }
 
     public RepositoryResponse<User> EditUser(int userId, UserToUpsertDto userDto)
