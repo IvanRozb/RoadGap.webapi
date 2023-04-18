@@ -24,20 +24,11 @@ public class StatusRepository : Repository, IStatusRepository
         SaveChanges();
     }
     
-    public RepositoryResponse<IEnumerable<Status>> GetStatuses() {
-        try
-        {
-            var statuses = EntityFramework.Status.ToList();
-            
-            return RepositoryResponse<IEnumerable<Status>>
-                    .CreateSuccess(statuses,
-                        "Statuses found successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<IEnumerable<Status>>
-                .CreateInternalServerError($"An error occurred while getting statuses: {ex.Message}");
-        }
+    public RepositoryResponse<IEnumerable<Status>> GetStatuses()
+    {
+        bool SearchPredicate(Status status) => true;
+
+        return SearchEntities((Func<Status, bool>)SearchPredicate, "Statuses found successfully.", "An error occurred while getting statuses.");
     }
     public RepositoryResponse<Status> GetStatusById(int statusId)
     {

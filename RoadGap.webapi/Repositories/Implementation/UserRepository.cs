@@ -20,32 +20,21 @@ public class UserRepository : Repository, IUserRepository
 
     public RepositoryResponse<IEnumerable<User>> GetUsers(string searchParam = "")
     {
-        try
-        {
-            searchParam = searchParam.Trim();
-            if (searchParam == "")
-            {
-                return RepositoryResponse<IEnumerable<User>>
-                    .CreateSuccess(EntityFramework.Users.ToList(),
-                        "Users found successfully.");
-            }
-
-            var keywords = searchParam.ToLower().Split(' ');
-            var searchedUsers = EntityFramework.Users.AsEnumerable()
-                .Where(user => keywords.Any(keyword =>
-                    user.UserName.ToLower().Contains(keyword) ||
-                    user.Email.ToLower().Contains(keyword)))
-                .ToList();
-
-            return RepositoryResponse<IEnumerable<User>>
-                .CreateSuccess(searchedUsers,
-                    "Users searched successfully.");
-        }
-        catch (Exception ex)
+        searchParam = searchParam.Trim();
+        if (searchParam == "")
         {
             return RepositoryResponse<IEnumerable<User>>
-                .CreateInternalServerError($"An error occurred while getting users: {ex.Message}");
+                .CreateSuccess(EntityFramework.Users.ToList(),
+                    "Users found successfully.");
         }
+
+        var keywords = searchParam.ToLower().Split(' ');
+
+        bool SearchPredicate(User user) => keywords.Any(keyword =>
+            user.UserName.ToLower().Contains(keyword) || user.Email.ToLower().Contains(keyword));
+
+        return SearchEntities((Func<User, bool>)SearchPredicate, "Users searched successfully.",
+            "An error occurred while getting users.");
     }
 
     public RepositoryResponse<User> GetUserById(int userId)

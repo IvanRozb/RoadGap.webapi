@@ -23,34 +23,26 @@ public class CategoryRepository : Repository, ICategoryRepository
         EntityFramework.Category.RemoveRange(EntityFramework.Category);
         SaveChanges();
     }
-    public RepositoryResponse<IEnumerable<Category>> GetCategories(string searchParam = "") {
-        try
-        {
-            searchParam = searchParam.Trim();
-            if (searchParam == "")
-            {
-                return RepositoryResponse<IEnumerable<Category>>
-                    .CreateSuccess(EntityFramework.Category.ToList(),
-                        "Categories found successfully.");
-            }
 
-            var keywords = searchParam.ToLower().Split(' ');
-            var searchedCategories = EntityFramework.Category.AsEnumerable()
-                .Where(category => keywords.Any(keyword =>
-                    category.Title.ToLower().Contains(keyword) ||
-                    category.Description.ToLower().Contains(keyword)))
-                .ToList();
-
-            return RepositoryResponse<IEnumerable<Category>>
-                .CreateSuccess(searchedCategories,
-                    "Categories searched successfully.");
-        }
-        catch (Exception ex)
+    public RepositoryResponse<IEnumerable<Category>> GetCategories(string searchParam = "")
+    {
+        searchParam = searchParam.Trim();
+        if (searchParam == "")
         {
             return RepositoryResponse<IEnumerable<Category>>
-                .CreateInternalServerError($"An error occurred while getting categories: {ex.Message}");
+                .CreateSuccess(EntityFramework.Category.ToList(),
+                    "Categories found successfully.");
         }
+
+        var keywords = searchParam.ToLower().Split(' ');
+
+        bool SearchPredicate(Category category) => keywords.Any(keyword =>
+            category.Title.ToLower().Contains(keyword) || category.Description.ToLower().Contains(keyword));
+
+        return SearchEntities((Func<Category, bool>)SearchPredicate, "Categories searched successfully.",
+            "An error occurred while getting categories.");
     }
+
     public RepositoryResponse<Category> GetCategoryById(int categoryId)
     {
         try
