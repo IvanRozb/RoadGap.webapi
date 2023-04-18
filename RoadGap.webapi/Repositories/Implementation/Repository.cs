@@ -46,8 +46,8 @@ public abstract class Repository : IRepository
     }
 
     protected RepositoryResponse<IEnumerable<T>> SearchEntities<T>(
-        Func<T, bool> searchPredicate, 
-        string successMessage, 
+        Func<T, bool> searchPredicate,
+        string successMessage,
         string errorMessage)
         where T : class
     {
@@ -113,4 +113,41 @@ public abstract class Repository : IRepository
                 $"An error occurred while editing {typeof(TEntity).Name} with ID {entityId}: {ex.Message}");
         }
     }
+
+    protected RepositoryResponse<T> CreateEntity<T, TD>(TD entityToAdd, Func<TD, bool>[]? validationChecks = null,
+        string[]? errorMessages = null)
+        where T : class
+        where TD : class
+    {
+        try
+        {
+            if (validationChecks is not null)
+            {
+                errorMessages ??= Enumerable
+                    .Repeat("Validation failed", validationChecks.Length)
+                    .ToArray();
+
+                for (var i = 0; i < validationChecks.Length; i++)
+                {
+                    if (validationChecks[i](entityToAdd))
+                    {
+                        return RepositoryResponse<T>.CreateConflict(errorMessages[i]);
+                    }
+                }
+            }
+
+            var entity = Mapper.Map<T>(entityToAdd);
+
+            AddEntity(entity);
+            SaveChanges();
+
+            return RepositoryResponse<T>.CreateSuccess(entity, $"{typeof(T).Name} created successfully.");
+        }
+        catch (Exception ex)
+        {
+            return RepositoryResponse<T>.CreateInternalServerError(
+                $"An error occurred while creating {typeof(T).Name}: {ex.Message}");
+        }
+    }
+
 }

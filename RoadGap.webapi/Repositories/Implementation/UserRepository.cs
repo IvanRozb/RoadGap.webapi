@@ -59,29 +59,20 @@ public class UserRepository : Repository, IUserRepository
 
     public RepositoryResponse<User> CreateUser(UserToUpsertDto userToAdd)
     {
-        try
+        var validationChecks = new Func<UserToUpsertDto, bool>[]
         {
-            if (EntityChecker.UserExistsWithEmail(userToAdd.Email))
-            {
-                return RepositoryResponse<User>.CreateConflict("The email is already taken!");
-            }
-            
-            if (EntityChecker.UserExistsWithUserName(userToAdd.UserName))
-            {
-                return RepositoryResponse<User>.CreateConflict("The userName is already taken!");
-            }
-            
-            var user = Mapper.Map<User>(userToAdd);
-            
-            AddEntity(user);
-            SaveChanges();
+            x => EntityChecker.UserExistsWithEmail(x.Email),
+            x => EntityChecker.UserExistsWithUserName(x.UserName)
+        };
 
-            return RepositoryResponse<User>.CreateSuccess(user, "User created successfully.");
-        }
-        catch (Exception ex)
+        var validationErrorMessages = new[]
         {
-            return RepositoryResponse<User>.CreateInternalServerError($"An error occurred while creating user: {ex.Message}");
-        }
+            "The email is already taken!",
+            "The userName is already taken!"
+        };
+
+        return CreateEntity<User, UserToUpsertDto>(userToAdd, 
+            validationChecks, validationErrorMessages);
     }
 
     public RepositoryResponse<int> DeleteUser(int userId)

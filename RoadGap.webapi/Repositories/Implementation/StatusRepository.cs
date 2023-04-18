@@ -44,19 +44,7 @@ public class StatusRepository : Repository, IStatusRepository
 
     public RepositoryResponse<Status> CreateStatus(StatusToUpsertDto statusToAdd)
     {
-        try
-        {
-            var status = Mapper.Map<Status>(statusToAdd);
-            
-            AddEntity(status);
-            SaveChanges();
-
-            return RepositoryResponse<Status>.CreateSuccess(status, "Status created successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<Status>.CreateInternalServerError($"An error occurred while creating status: {ex.Message}");
-        }
+        return CreateEntity<Status, StatusToUpsertDto>(statusToAdd);
     }
     public RepositoryResponse<int> DeleteStatus(int statusId)
     {
