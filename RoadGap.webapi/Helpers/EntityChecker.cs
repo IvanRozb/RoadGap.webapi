@@ -20,6 +20,18 @@ public class EntityChecker
     public bool CategoryExists(int categoryId)
     {
         return _entityFramework.Category
-            .Any(status => status.CategoryId == categoryId);
+            .Any(category => category.CategoryId == categoryId);
+    }
+    
+    public bool UserExistsWithEmail(string? email)
+    {
+        return _entityFramework.Users
+            .Any(user => user.Email == email);
+    }
+    
+    public bool UserExistsWithUserName(string? userName)
+    {
+        return _entityFramework.Users
+            .Any(user => user.UserName == userName);
     }
 }

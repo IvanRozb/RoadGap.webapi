@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace RoadGap.webapi.Helpers;
@@ -30,6 +31,16 @@ public class RepositoryResponse<T>
         };
     }
 
+    public static RepositoryResponse<T> CreateConflict(string message = "")
+    {
+        return new RepositoryResponse<T>
+        {
+            Success = false,
+            Message = message,
+            StatusCode = 409
+        };
+    }
+
     public static RepositoryResponse<T> CreateBadRequest(string message = "")
     {
         return new RepositoryResponse<T>
@@ -57,11 +68,23 @@ public class RepositoryResponse<T>
             return new OkObjectResult(new { message = Message, data = Data });
         }
 
-        if (StatusCode == 404)
+        return StatusCode switch
         {
-            return new NotFoundObjectResult(new { message = Message });
-        }
+            404 => new NotFoundObjectResult(new { error = Message }),
+            409 => new ConflictObjectResult(new { error = Message }),
+            _ => new BadRequestObjectResult(new { error = Message })
+        };
+    }
 
-        return new BadRequestObjectResult(new { message = Message });
+
+    public RepositoryResponse<TD> ConvertWithAnotherData<TD>(TD data)
+    {
+        return new RepositoryResponse<TD>
+        {
+            Data = data,
+            Message = Message,
+            StatusCode = StatusCode,
+            Success = Success
+        };;
     }
 }

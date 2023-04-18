@@ -8,12 +8,12 @@ namespace RoadGap.webapi.Repositories.Implementation;
 
 public class TaskRepository : Repository, ITaskRepository
 {
-    public TaskRepository(IConfiguration configuration, IMapper mapper) 
+    public TaskRepository(IConfiguration configuration, IMapper mapper)
         : base(configuration, mapper)
     {
     }
-    
-    public TaskRepository(DataContext context, IMapper mapper) 
+
+    public TaskRepository(DataContext context, IMapper mapper)
         : base(context, mapper)
     {
     }
@@ -24,137 +24,69 @@ public class TaskRepository : Repository, ITaskRepository
         SaveChanges();
     }
 
-    public RepositoryResponse<IEnumerable<TaskModel>> GetTasks(string searchParam = "") {
-        try
-        {
-            searchParam = searchParam.Trim();
-            if (searchParam == "")
-            {
-                return RepositoryResponse<IEnumerable<TaskModel>>
-                    .CreateSuccess(EntityFramework.Tasks.ToList(),
-                        "Tasks found successfully.");
-            }
-
-            var keywords = searchParam.ToLower().Split(' ');
-            var searchedTasks = EntityFramework.Tasks.AsEnumerable()
-                .Where(task => keywords.Any(keyword =>
-                    task.Title.ToLower().Contains(keyword) ||
-                    task.Description.ToLower().Contains(keyword)))
-                .ToList();
-
-            return RepositoryResponse<IEnumerable<TaskModel>>
-                .CreateSuccess(searchedTasks,
-                    "Tasks searched successfully.");
-        }
-        catch (Exception ex)
+    public RepositoryResponse<IEnumerable<TaskModel>> GetTasks(string searchParam = "")
+    {
+        searchParam = searchParam.Trim();
+        if (searchParam == "")
         {
             return RepositoryResponse<IEnumerable<TaskModel>>
-                .CreateInternalServerError($"An error occurred while getting tasks: {ex.Message}");
+                .CreateSuccess(EntityFramework.Tasks.ToList(),
+                    "Tasks found successfully.");
         }
+
+        var keywords = searchParam.ToLower().Split(' ');
+
+        bool SearchPredicate(TaskModel task) => keywords.Any(keyword =>
+            task.Title.ToLower().Contains(keyword) || task.Description.ToLower().Contains(keyword));
+
+        return SearchEntities((Func<TaskModel, bool>)SearchPredicate, "Tasks searched successfully.",
+            "An error occurred while getting tasks.");
     }
+
     public RepositoryResponse<TaskModel> GetTaskById(int taskId)
     {
-        try
-        {
-            var task = EntityFramework.Tasks
-                .FirstOrDefault(task => task.TaskId == taskId);
-
-            if (task == null)
-            {
-                return RepositoryResponse<TaskModel>.CreateNotFound($"Task with ID {taskId} not found");
-            }
-
-            return RepositoryResponse<TaskModel>
-                .CreateSuccess(task, "Task found successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while getting task with ID {taskId}: {ex.Message}");
-        }
+        return GetEntityById<TaskModel>(taskId);
     }
+
     public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto)
     {
-        try
+        if (!EntityChecker.CategoryExists(taskDto.CategoryId))
         {
-            if (!EntityChecker.CategoryExists(taskDto.CategoryId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest($"Category with ID {taskDto.CategoryId} not found");
-            }
-            
-            if (!EntityChecker.StatusExists(taskDto.StatusId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
-            }
-            
-            var taskResponse = GetTaskById(taskId);
-
-            if (!taskResponse.Success)
-            {
-                return taskResponse;
-            }
-
-            var task = taskResponse.Data;
-            
-            Mapper.Map(taskDto, task);
-            task.TaskUpdated = DateTime.Now;
-
-            EntityFramework.SaveChanges();
-
-            return RepositoryResponse<TaskModel>.CreateSuccess(task, "Task updated successfully.");
+            return RepositoryResponse<TaskModel>.CreateBadRequest(
+                $"Category with ID {taskDto.CategoryId} not found");
         }
-        catch (Exception ex)
+
+        if (!EntityChecker.StatusExists(taskDto.StatusId))
         {
-            return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while editing task with ID {taskId}: {ex.Message}");
+            return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
         }
+        
+        return EditEntity(taskId, taskDto, GetTaskById, (dto, entity) => {
+            Mapper.Map(dto, entity);
+            entity.TaskUpdated = DateTime.Now;
+        });
     }
+
     public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd)
     {
-        try
+        var validationChecks = new Func<TaskToUpsertDto, bool>[]
         {
-            if (!EntityChecker.CategoryExists(taskToAdd.CategoryId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest($"Category with ID {taskToAdd.CategoryId} not found");
-            }
-            
-            if (!EntityChecker.StatusExists(taskToAdd.StatusId))
-            {
-                return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskToAdd.StatusId} not found");
-            }
+            x => !EntityChecker.CategoryExists(x.CategoryId),
+            x => !EntityChecker.StatusExists(x.StatusId)
+        };
 
-            var task = Mapper.Map<TaskModel>(taskToAdd);
-            task.TaskUpdated = DateTime.Now;
-            
-            AddEntity(task);
-            SaveChanges();
-
-            return RepositoryResponse<TaskModel>.CreateSuccess(task, "Task created successfully.");
-        }
-        catch (Exception ex)
+        var validationErrorMessages = new[]
         {
-            return RepositoryResponse<TaskModel>.CreateInternalServerError($"An error occurred while creating task: {ex.Message}");
-        }
+            $"Category with ID {taskToAdd.CategoryId} not found",
+            $"Status with ID {taskToAdd.StatusId} not found"
+        };
+
+        return CreateEntity<TaskModel, TaskToUpsertDto>(taskToAdd,
+            validationChecks, validationErrorMessages);
+
     }
+
     public RepositoryResponse<int> DeleteTask(int taskId)
     {
-        try
-        {
-            var response = GetTaskById(taskId);
-
-            if (!response.Success)
-            {
-                return RepositoryResponse<int>.CreateBadRequest($"Task with ID {taskId} not found");
-            }
-
-            var task = response.Data;
-
-            RemoveEntity(task);
-            SaveChanges();
-
-            return RepositoryResponse<int>.CreateSuccess(taskId, "Task deleted successfully.");
-        }
-        catch (Exception ex)
-        {
-            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing task with ID {taskId}: {ex.Message}");
-        }
-    }
-}
+        return DeleteEntity<Task>(taskId);
+    }}
