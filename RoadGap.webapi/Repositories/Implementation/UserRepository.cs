@@ -73,6 +73,16 @@ public class UserRepository : Repository, IUserRepository
     {
         try
         {
+            if (EntityChecker.UserExistsWithEmail(userDto.Email))
+            {
+                return RepositoryResponse<User>.CreateConflict("The email is already taken!");
+            }
+            
+            if (EntityChecker.UserExistsWithUserName(userDto.UserName))
+            {
+                return RepositoryResponse<User>.CreateConflict("The userName is already taken!");
+            }
+            
             var userResponse = GetUserById(userId);
 
             if (!userResponse.Success)
@@ -98,6 +108,16 @@ public class UserRepository : Repository, IUserRepository
     {
         try
         {
+            if (EntityChecker.UserExistsWithEmail(userToAdd.Email))
+            {
+                return RepositoryResponse<User>.CreateConflict("The email is already taken!");
+            }
+            
+            if (EntityChecker.UserExistsWithUserName(userToAdd.UserName))
+            {
+                return RepositoryResponse<User>.CreateConflict("The userName is already taken!");
+            }
+            
             var user = Mapper.Map<User>(userToAdd);
             
             AddEntity(user);
