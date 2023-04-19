@@ -1,6 +1,7 @@
 using System.Net;
 using LoggerService;
 using Microsoft.AspNetCore.Diagnostics;
+using RoadGap.webapi.CustomExceptionMiddleware;
 using RoadGap.webapi.Models;
 
 namespace RoadGap.webapi.Extensions;
@@ -31,5 +32,10 @@ public static class ExceptionMiddlewareExtensions
                 }
             });
         });
+    }
+
+    public static void ConfigureCustomExceptionMiddleware(this WebApplication app)
+    {
+        app.UseMiddleware<ExceptionMiddleware>();
     }
 }
