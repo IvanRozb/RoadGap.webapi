@@ -52,13 +52,14 @@ public class TaskRepository : Repository, ITaskRepository
     {
         if (!EntityChecker.CategoryExists(taskDto.CategoryId))
         {
-            return RepositoryResponse<TaskModel>.CreateBadRequest(
+            return RepositoryResponse<TaskModel>.CreateConflict(
                 $"Category with ID {taskDto.CategoryId} not found");
         }
 
         if (!EntityChecker.StatusExists(taskDto.StatusId))
         {
-            return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
+            return RepositoryResponse<TaskModel>.CreateConflict(
+                $"Status with ID {taskDto.StatusId} not found");
         }
         
         return EditEntity(taskId, taskDto, GetTaskById, (dto, entity) => {
@@ -69,20 +70,19 @@ public class TaskRepository : Repository, ITaskRepository
 
     public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd)
     {
-        var validationChecks = new Func<TaskToUpsertDto, bool>[]
+        if (!EntityChecker.CategoryExists(taskToAdd.CategoryId))
         {
-            x => !EntityChecker.CategoryExists(x.CategoryId),
-            x => !EntityChecker.StatusExists(x.StatusId)
-        };
+            return RepositoryResponse<TaskModel>
+                .CreateConflict($"Category with ID {taskToAdd.CategoryId} not found");
+        }
 
-        var validationErrorMessages = new[]
+        if (!EntityChecker.StatusExists(taskToAdd.StatusId))
         {
-            $"Category with ID {taskToAdd.CategoryId} not found",
-            $"Status with ID {taskToAdd.StatusId} not found"
-        };
+            return RepositoryResponse<TaskModel>
+                .CreateConflict($"Status with ID {taskToAdd.StatusId} not found");
+        }
 
-        return CreateEntity<TaskModel, TaskToUpsertDto>(taskToAdd,
-            validationChecks, validationErrorMessages);
+        return CreateEntity<TaskModel, TaskToUpsertDto>(taskToAdd);
 
     }
 
