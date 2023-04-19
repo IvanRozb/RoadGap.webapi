@@ -8,12 +8,12 @@ namespace RoadGap.webapi.Repositories.Implementation;
 
 public class UserRepository : Repository, IUserRepository
 {
-    public UserRepository(IConfiguration configuration, IMapper mapper) 
+    public UserRepository(IConfiguration configuration, IMapper mapper)
         : base(configuration, mapper)
     {
     }
 
-    public UserRepository(DataContext context, IMapper mapper) 
+    public UserRepository(DataContext context, IMapper mapper)
         : base(context, mapper)
     {
     }
@@ -42,19 +42,44 @@ public class UserRepository : Repository, IUserRepository
         return GetEntityById<User>(userId);
     }
 
-    public RepositoryResponse<User> EditUser(int userId, UserToUpsertDto userDto)
+    public RepositoryResponse<User> EditUser(int userId, UserToUpsertDto userToEdit)
     {
-        if (EntityChecker.UserExistsWithEmail(userDto.Email))
+        if (!Validator.ValidateUserName(userToEdit.UserName))
         {
-            return RepositoryResponse<User>.CreateConflict("The email is already taken!");
+            return RepositoryResponse<User>.CreateConflict(
+                "Invalid user name. User name should only contain alphabets, " +
+                "numbers and must contain less or equal than 50 characters.");
         }
-            
-        if (EntityChecker.UserExistsWithUserName(userDto.UserName))
+
+        if (EntityChecker.UserExistsWithUserName(userToEdit.UserName))
         {
-            return RepositoryResponse<User>.CreateConflict("The userName is already taken!");
+            return RepositoryResponse<User>
+                .CreateConflict("The user with this userName already exists.");
         }
-        
-        return EditEntity(userId, userDto, GetUserById);
+
+        if (!Validator.ValidateEmail(userToEdit.Email))
+        {
+            return RepositoryResponse<User>.CreateConflict(
+                "The provided email is not in a valid format. " +
+                "Please use the format \"test@test.com\" and " +
+                "keep the length to 320 characters or less.);");
+        }
+
+        if (EntityChecker.UserExistsWithEmail(userToEdit.Email))
+        {
+            return RepositoryResponse<User>
+                .CreateConflict("The user with this email already exists.");
+        }
+
+        if (!Validator.ValidateUrl(userToEdit.Photo))
+        {
+            return RepositoryResponse<User>.CreateConflict(
+                "Invalid photo URL. " +
+                "The URL must be 255 characters or less and in a valid format. " +
+                "Please use a valid URL or a shortening service like bit.ly.");
+        }
+
+        return EditEntity(userId, userToEdit, GetUserById);
     }
 
     public RepositoryResponse<User> CreateUser(UserToUpsertDto userToAdd)
@@ -75,8 +100,9 @@ public class UserRepository : Repository, IUserRepository
         if (!Validator.ValidateEmail(userToAdd.Email))
         {
             return RepositoryResponse<User>.CreateConflict(
-                "Invalid email format. Email must look like \"test@test.com\" " +
-                "and contain less or equal than 320 characters");
+                "The provided email is not in a valid format. " +
+                "Please use the format \"test@test.com\" and " +
+                "keep the length to 320 characters or less.);");
         }
 
         if (EntityChecker.UserExistsWithEmail(userToAdd.Email))
@@ -85,10 +111,19 @@ public class UserRepository : Repository, IUserRepository
                 .CreateConflict("The user with this email already exists.");
         }
 
+        if (!Validator.ValidateUrl(userToAdd.Photo))
+        {
+            return RepositoryResponse<User>.CreateConflict(
+                "Invalid photo URL. " +
+                "The URL must be 255 characters or less and in a valid format. " +
+                "Please use a valid URL or a shortening service like bit.ly.");
+        }
+
         return CreateEntity<User, UserToUpsertDto>(userToAdd);
     }
 
     public RepositoryResponse<int> DeleteUser(int userId)
     {
         return DeleteEntity<User>(userId);
-    }}
+    }
+}

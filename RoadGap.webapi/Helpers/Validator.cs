@@ -23,9 +23,8 @@ public static partial class Validator
     public static bool ValidateUrl(string url)
     {
         var trimmedUrl = url.Trim();
-        return !string.IsNullOrEmpty(trimmedUrl)
-               && trimmedUrl.Length <= 255
-               && MyRegex2().IsMatch(trimmedUrl);
+        return trimmedUrl.Length <= 255
+               && (trimmedUrl == string.Empty || MyRegex2().IsMatch(trimmedUrl));
     }
 
     // Regex pattern to match only alphabets and numbers
