@@ -40,10 +40,16 @@ public class StatusRepository : Repository, IStatusRepository
 
     public RepositoryResponse<Status> EditStatus(int statusId, StatusToUpsertDto statusToEdit)
     {
+        if (statusToEdit.Title.Length > 15)
+        {
+            return RepositoryResponse<Status>
+                .CreateConflict("Title must be 15 characters or less.");
+        }
+            
         if (EntityChecker.StatusExistsByTitle(statusToEdit.Title))
         {
             return RepositoryResponse<Status>
-                .CreateConflict("The status with this title already exists");
+                .CreateConflict("A status with this title already exists.");
         }
 
         return EditEntity(statusId, statusToEdit, GetStatusById);
@@ -51,10 +57,16 @@ public class StatusRepository : Repository, IStatusRepository
 
     public RepositoryResponse<Status> CreateStatus(StatusToUpsertDto statusToAdd)
     {
+        if (statusToAdd.Title.Length > 15)
+        {
+            return RepositoryResponse<Status>
+                .CreateConflict("Title must be 15 characters or less.");
+        }
+            
         if (EntityChecker.StatusExistsByTitle(statusToAdd.Title))
         {
             return RepositoryResponse<Status>
-                .CreateConflict("The status with this title already exists");
+                .CreateConflict("A status with this title already exists.");
         }
         
         return CreateEntity<Status, StatusToUpsertDto>(statusToAdd);
