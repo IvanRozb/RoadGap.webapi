@@ -119,29 +119,12 @@ public abstract class Repository : IRepository
         }
     }
 
-    protected RepositoryResponse<TEntity> CreateEntity<TEntity, TEntityDto>(TEntityDto entityToAdd,
-        Func<TEntityDto, bool>[]? validationChecks = null,
-        string[]? errorMessages = null)
+    protected RepositoryResponse<TEntity> CreateEntity<TEntity, TEntityDto>(TEntityDto entityToAdd)
         where TEntity : class
         where TEntityDto : class
     {
         try
         {
-            if (validationChecks is not null)
-            {
-                errorMessages ??= Enumerable
-                    .Repeat("Validation failed!", validationChecks.Length)
-                    .ToArray();
-
-                for (var i = 0; i < validationChecks.Length; i++)
-                {
-                    if (validationChecks[i](entityToAdd))
-                    {
-                        return RepositoryResponse<TEntity>.CreateConflict(errorMessages[i]);
-                    }
-                }
-            }
-
             var entity = Mapper.Map<TEntity>(entityToAdd);
 
             AddEntity(entity);

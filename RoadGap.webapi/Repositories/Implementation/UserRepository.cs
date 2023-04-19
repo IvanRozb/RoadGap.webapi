@@ -59,20 +59,33 @@ public class UserRepository : Repository, IUserRepository
 
     public RepositoryResponse<User> CreateUser(UserToUpsertDto userToAdd)
     {
-        var validationChecks = new Func<UserToUpsertDto, bool>[]
+        if (!Validator.ValidateUserName(userToAdd.UserName))
         {
-            x => EntityChecker.UserExistsWithEmail(x.Email),
-            x => EntityChecker.UserExistsWithUserName(x.UserName)
-        };
+            return RepositoryResponse<User>.CreateConflict(
+                "Invalid user name. User name should only contain alphabets, " +
+                "numbers and must contain less or equal than 50 characters.");
+        }
 
-        var validationErrorMessages = new[]
+        if (EntityChecker.UserExistsWithUserName(userToAdd.UserName))
         {
-            "The email is already taken!",
-            "The userName is already taken!"
-        };
+            return RepositoryResponse<User>
+                .CreateConflict("The user with this userName already exists.");
+        }
 
-        return CreateEntity<User, UserToUpsertDto>(userToAdd, 
-            validationChecks, validationErrorMessages);
+        if (!Validator.ValidateEmail(userToAdd.Email))
+        {
+            return RepositoryResponse<User>.CreateConflict(
+                "Invalid email format. Email must look like \"test@test.com\" " +
+                "and contain less or equal than 320 characters");
+        }
+
+        if (EntityChecker.UserExistsWithEmail(userToAdd.Email))
+        {
+            return RepositoryResponse<User>
+                .CreateConflict("The user with this email already exists.");
+        }
+
+        return CreateEntity<User, UserToUpsertDto>(userToAdd);
     }
 
     public RepositoryResponse<int> DeleteUser(int userId)
