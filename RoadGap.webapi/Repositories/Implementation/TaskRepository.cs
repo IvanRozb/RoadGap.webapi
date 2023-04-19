@@ -56,7 +56,7 @@ public class TaskRepository : Repository, ITaskRepository
                 $"Category with ID {taskDto.CategoryId} not found");
         }
 
-        if (!EntityChecker.StatusExists(taskDto.StatusId))
+        if (!EntityChecker.StatusExistsById(taskDto.StatusId))
         {
             return RepositoryResponse<TaskModel>.CreateConflict(
                 $"Status with ID {taskDto.StatusId} not found");
@@ -76,7 +76,7 @@ public class TaskRepository : Repository, ITaskRepository
                 .CreateConflict($"Category with ID {taskToAdd.CategoryId} not found");
         }
 
-        if (!EntityChecker.StatusExists(taskToAdd.StatusId))
+        if (!EntityChecker.StatusExistsById(taskToAdd.StatusId))
         {
             return RepositoryResponse<TaskModel>
                 .CreateConflict($"Status with ID {taskToAdd.StatusId} not found");

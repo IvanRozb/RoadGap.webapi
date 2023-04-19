@@ -75,7 +75,7 @@ public class EntityCheckerTests
         _context.SaveChanges();
 
         // Act
-        var result = _entityChecker.StatusExists(status.StatusId);
+        var result = _entityChecker.StatusExistsById(status.StatusId);
 
         // Assert
         Assert.That(result, Is.True);
@@ -88,7 +88,7 @@ public class EntityCheckerTests
         const int statusId = 1;
 
         // Act
-        var result = _entityChecker.StatusExists(statusId);
+        var result = _entityChecker.StatusExistsById(statusId);
 
         // Assert
         Assert.That(result, Is.False);
