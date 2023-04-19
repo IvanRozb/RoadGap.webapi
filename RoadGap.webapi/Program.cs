@@ -1,3 +1,5 @@
+using LoggerService;
+using NLog;
 using RoadGap.webapi.Dtos;
 using RoadGap.webapi.Models;
 using RoadGap.webapi.Repositories;
@@ -5,8 +7,11 @@ using RoadGap.webapi.Repositories.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Load configuration for logger manager
+LogManager.LoadConfiguration(string.Concat(Directory.GetCurrentDirectory(), "/nlog.config"));
 // Add services to the container.
 
+builder.Services.AddSingleton<ILoggerManager, LoggerManager>();
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
