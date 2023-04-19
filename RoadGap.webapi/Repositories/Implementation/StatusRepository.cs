@@ -12,39 +12,68 @@ public class StatusRepository : Repository, IStatusRepository
         : base(configuration, mapper)
     {
     }
-    
-    public StatusRepository(DataContext context, IMapper mapper) 
+
+    public StatusRepository(DataContext context, IMapper mapper)
         : base(context, mapper)
     {
     }
-    
+
     public void Dispose()
     {
         EntityFramework.Status.RemoveRange(EntityFramework.Status);
         SaveChanges();
     }
-    
+
     public RepositoryResponse<IEnumerable<Status>> GetStatuses()
     {
         bool SearchPredicate(Status status) => true;
 
-        return SearchEntities((Func<Status, bool>)SearchPredicate, "Statuses found successfully.", "An error occurred while getting statuses.");
+        return SearchEntities((Func<Status, bool>)SearchPredicate,
+            "Statuses found successfully.",
+            "An error occurred while getting statuses.");
     }
+
     public RepositoryResponse<Status> GetStatusById(int statusId)
     {
         return GetEntityById<Status>(statusId);
     }
 
-    public RepositoryResponse<Status> EditStatus(int statusId, StatusToUpsertDto statusDto)
+    public RepositoryResponse<Status> EditStatus(int statusId, StatusToUpsertDto statusToEdit)
     {
-        return EditEntity(statusId, statusDto, GetStatusById);
+        if (statusToEdit.Title.Length > 15)
+        {
+            return RepositoryResponse<Status>
+                .CreateConflict("Title must be 15 characters or less.");
+        }
+            
+        if (EntityChecker.StatusExistsByTitle(statusToEdit.Title))
+        {
+            return RepositoryResponse<Status>
+                .CreateConflict("A status with this title already exists.");
+        }
+
+        return EditEntity(statusId, statusToEdit, GetStatusById);
     }
 
     public RepositoryResponse<Status> CreateStatus(StatusToUpsertDto statusToAdd)
     {
+        if (statusToAdd.Title.Length > 15)
+        {
+            return RepositoryResponse<Status>
+                .CreateConflict("Title must be 15 characters or less.");
+        }
+            
+        if (EntityChecker.StatusExistsByTitle(statusToAdd.Title))
+        {
+            return RepositoryResponse<Status>
+                .CreateConflict("A status with this title already exists.");
+        }
+        
         return CreateEntity<Status, StatusToUpsertDto>(statusToAdd);
     }
+
     public RepositoryResponse<int> DeleteStatus(int statusId)
     {
         return DeleteEntity<Status>(statusId);
-    }}
+    }
+}

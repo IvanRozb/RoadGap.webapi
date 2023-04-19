@@ -12,12 +12,12 @@ public class CategoryRepository : Repository, ICategoryRepository
         : base(configuration, mapper)
     {
     }
-    
-    public CategoryRepository(DataContext context, IMapper mapper) 
+
+    public CategoryRepository(DataContext context, IMapper mapper)
         : base(context, mapper)
     {
     }
-    
+
     public void Dispose()
     {
         EntityFramework.Category.RemoveRange(EntityFramework.Category);
@@ -37,23 +37,69 @@ public class CategoryRepository : Repository, ICategoryRepository
         var keywords = searchParam.ToLower().Split(' ');
 
         bool SearchPredicate(Category category) => keywords.Any(keyword =>
-            category.Title.ToLower().Contains(keyword) || category.Description.ToLower().Contains(keyword));
+            category.Title.ToLower().Contains(keyword) ||
+            category.Description.ToLower().Contains(keyword));
 
-        return SearchEntities((Func<Category, bool>)SearchPredicate, "Categories searched successfully.",
+        return SearchEntities((Func<Category, bool>)SearchPredicate,
+            "Categories searched successfully.",
             "An error occurred while getting categories.");
     }
+
     public RepositoryResponse<Category> GetCategoryById(int categoryId)
     {
         return GetEntityById<Category>(categoryId);
     }
-    public RepositoryResponse<Category> EditCategory(int categoryId, CategoryToUpsertDto categoryDto)
+
+    public RepositoryResponse<Category> EditCategory(int categoryId, CategoryToUpsertDto categoryToEdit)
     {
-        return EditEntity(categoryId, categoryDto, GetCategoryById);
+        if (categoryToEdit.Title.Length > 50)
+        {
+            return RepositoryResponse<Category>
+                .CreateConflict("Title must be 50 characters or less.");
+        }
+
+        if (categoryToEdit.Description.Length > 300)
+        {
+            return RepositoryResponse<Category>
+                .CreateConflict("Description must be 300 characters or less.");
+        }
+
+        if (!Validator.ValidateUrl(categoryToEdit.Photo))
+        {
+            return RepositoryResponse<Category>
+                .CreateConflict("Invalid photo URL. " +
+                                "The URL must be 255 characters or less and in a valid format. " +
+                                "Please use a valid URL or a shortening service like bit.ly.");
+        }
+
+        return EditEntity(categoryId, categoryToEdit, GetCategoryById);
     }
+
     public RepositoryResponse<Category> CreateCategory(CategoryToUpsertDto categoryToAdd)
     {
+        if (categoryToAdd.Title.Length > 50)
+        {
+            return RepositoryResponse<Category>
+                .CreateConflict("Title must be 50 characters or less.");
+        }
+
+        if (categoryToAdd.Description.Length > 300)
+        {
+            return RepositoryResponse<Category>
+                .CreateConflict("Description must be 300 characters or less.");
+        }
+
+        if (!Validator.ValidateUrl(categoryToAdd.Photo))
+        {
+            return RepositoryResponse<Category>
+                .CreateConflict("Invalid photo URL. " +
+                                "The URL must be 255 characters or less and in a valid format. " +
+                                "Please use a valid URL or a shortening service like bit.ly.");
+        }
+
         return CreateEntity<Category, CategoryToUpsertDto>(categoryToAdd);
     }
+
     public RepositoryResponse<int> DeleteCategory(int categoryId)
     {
         return DeleteEntity<Category>(categoryId);

@@ -11,12 +11,18 @@ public class EntityChecker
         _entityFramework = context;
     }
     
-    public bool StatusExists(int statusId)
+    public bool StatusExistsById(int statusId)
     {
         return _entityFramework.Status
             .Any(status => status.StatusId == statusId);
     }
-
+    
+    public bool StatusExistsByTitle(string statusTitle)
+    {
+        return _entityFramework.Status
+            .Any(status => status.Title == statusTitle);
+    }
+    
     public bool CategoryExists(int categoryId)
     {
         return _entityFramework.Category

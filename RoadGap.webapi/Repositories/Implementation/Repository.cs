@@ -119,35 +119,23 @@ public abstract class Repository : IRepository
         }
     }
 
-    protected RepositoryResponse<TEntity> CreateEntity<TEntity, TEntityDto>(TEntityDto entityToAdd,
-        Func<TEntityDto, bool>[]? validationChecks = null,
-        string[]? errorMessages = null)
+    protected RepositoryResponse<TEntity> CreateEntity<TEntity, TEntityDto>
+    (TEntityDto entityToAdd,
+        Func<TEntityDto, TEntity>? mapEntityDtoToEntity = null)
         where TEntity : class
         where TEntityDto : class
     {
         try
         {
-            if (validationChecks is not null)
-            {
-                errorMessages ??= Enumerable
-                    .Repeat("Validation failed!", validationChecks.Length)
-                    .ToArray();
-
-                for (var i = 0; i < validationChecks.Length; i++)
-                {
-                    if (validationChecks[i](entityToAdd))
-                    {
-                        return RepositoryResponse<TEntity>.CreateConflict(errorMessages[i]);
-                    }
-                }
-            }
-
-            var entity = Mapper.Map<TEntity>(entityToAdd);
+            var entity = mapEntityDtoToEntity is not null
+                ? mapEntityDtoToEntity(entityToAdd)
+                : Mapper.Map<TEntity>(entityToAdd);
 
             AddEntity(entity);
             SaveChanges();
 
-            return RepositoryResponse<TEntity>.CreateSuccess(entity, $"{typeof(TEntity).Name} created successfully.");
+            return RepositoryResponse<TEntity>.CreateSuccess(entity,
+                $"{typeof(TEntity).Name} created successfully.");
         }
         catch (Exception ex)
         {
@@ -155,8 +143,8 @@ public abstract class Repository : IRepository
                 $"An error occurred while creating {typeof(TEntity).Name}: {ex.Message}");
         }
     }
-    
-    protected RepositoryResponse<int> DeleteEntity<T>(int entityId) 
+
+    protected RepositoryResponse<int> DeleteEntity<T>(int entityId)
         where T : class
     {
         try
@@ -177,8 +165,8 @@ public abstract class Repository : IRepository
         }
         catch (Exception ex)
         {
-            return RepositoryResponse<int>.CreateInternalServerError($"An error occurred while editing {typeof(T).Name} with ID {entityId}: {ex.Message}");
+            return RepositoryResponse<int>.CreateInternalServerError(
+                $"An error occurred while editing {typeof(T).Name} with ID {entityId}: {ex.Message}");
         }
     }
-
 }

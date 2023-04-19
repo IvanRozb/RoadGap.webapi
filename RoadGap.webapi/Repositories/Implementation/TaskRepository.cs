@@ -48,20 +48,41 @@ public class TaskRepository : Repository, ITaskRepository
         return GetEntityById<TaskModel>(taskId);
     }
 
-    public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskDto)
+    public RepositoryResponse<TaskModel> EditTask(int taskId, TaskToUpsertDto taskToEdit)
     {
-        if (!EntityChecker.CategoryExists(taskDto.CategoryId))
+        if (!EntityChecker.CategoryExists(taskToEdit.CategoryId))
         {
-            return RepositoryResponse<TaskModel>.CreateBadRequest(
-                $"Category with ID {taskDto.CategoryId} not found");
+            return RepositoryResponse<TaskModel>.CreateConflict(
+                $"Category with ID {taskToEdit.CategoryId} does not exists");
         }
 
-        if (!EntityChecker.StatusExists(taskDto.StatusId))
+        if (!EntityChecker.StatusExistsById(taskToEdit.StatusId))
         {
-            return RepositoryResponse<TaskModel>.CreateBadRequest($"Status with ID {taskDto.StatusId} not found");
+            return RepositoryResponse<TaskModel>.CreateConflict(
+                $"Status with ID {taskToEdit.StatusId} does not exists");
         }
-        
-        return EditEntity(taskId, taskDto, GetTaskById, (dto, entity) => {
+
+        if (taskToEdit.Title.Length > 50)
+        {
+            return RepositoryResponse<TaskModel>
+                .CreateConflict("Title must be 50 characters or less.");
+        }
+
+        if (taskToEdit.Description.Length > 1000)
+        {
+            return RepositoryResponse<TaskModel>
+                .CreateConflict("Description must be 1000 characters or less.");
+        }
+
+        if (taskToEdit is { StartTime: { }, Deadline: { } }
+            && taskToEdit.StartTime > taskToEdit.Deadline)
+        {
+            return RepositoryResponse<TaskModel>
+                .CreateConflict("The start time cannot be later than the deadline.");
+        }
+
+        return EditEntity(taskId, taskToEdit, GetTaskById, (dto, entity) =>
+        {
             Mapper.Map(dto, entity);
             entity.TaskUpdated = DateTime.Now;
         });
@@ -69,24 +90,47 @@ public class TaskRepository : Repository, ITaskRepository
 
     public RepositoryResponse<TaskModel> CreateTask(TaskToUpsertDto taskToAdd)
     {
-        var validationChecks = new Func<TaskToUpsertDto, bool>[]
+        if (!EntityChecker.CategoryExists(taskToAdd.CategoryId))
         {
-            x => !EntityChecker.CategoryExists(x.CategoryId),
-            x => !EntityChecker.StatusExists(x.StatusId)
-        };
+            return RepositoryResponse<TaskModel>.CreateConflict(
+                $"Category with ID {taskToAdd.CategoryId} does not exists");
+        }
 
-        var validationErrorMessages = new[]
+        if (!EntityChecker.StatusExistsById(taskToAdd.StatusId))
         {
-            $"Category with ID {taskToAdd.CategoryId} not found",
-            $"Status with ID {taskToAdd.StatusId} not found"
-        };
+            return RepositoryResponse<TaskModel>.CreateConflict(
+                $"Status with ID {taskToAdd.StatusId} does not exists");
+        }
 
-        return CreateEntity<TaskModel, TaskToUpsertDto>(taskToAdd,
-            validationChecks, validationErrorMessages);
+        if (taskToAdd.Title.Length > 50)
+        {
+            return RepositoryResponse<TaskModel>
+                .CreateConflict("Title must be 50 characters or less.");
+        }
 
+        if (taskToAdd.Description.Length > 1000)
+        {
+            return RepositoryResponse<TaskModel>
+                .CreateConflict("Description must be 1000 characters or less.");
+        }
+
+        if (taskToAdd is { StartTime: { }, Deadline: { } }
+            && taskToAdd.StartTime > taskToAdd.Deadline)
+        {
+            return RepositoryResponse<TaskModel>
+                .CreateConflict("The start time cannot be later than the deadline.");
+        }
+
+        return CreateEntity<TaskModel, TaskToUpsertDto>(taskToAdd, (dto) =>
+        {
+            var entity = Mapper.Map<TaskModel>(dto);
+            entity.TaskUpdated = DateTime.Now;
+            return entity;
+        });
     }
 
     public RepositoryResponse<int> DeleteTask(int taskId)
     {
         return DeleteEntity<Task>(taskId);
-    }}
+    }
+}
