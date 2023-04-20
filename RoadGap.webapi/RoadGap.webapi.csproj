@@ -24,4 +24,8 @@
         </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\LoggerService\LoggerService.csproj" />
+    </ItemGroup>
+
 </Project>

@@ -3,3 +3,7 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+logs/
+internallog.txt
+RoadGap.webapi.sln.DotSettings.user
+.idea/.idea.RoadGap.webapi/.idea/shelf/
