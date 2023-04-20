@@ -50,9 +50,6 @@ builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 var app = builder.Build();
-
-var logger = app.Services.GetRequiredService<ILoggerManager>();
-// app.ConfigureExceptionHandler(logger);
 app.ConfigureCustomExceptionMiddleware();
 
 // Configure the HTTP request pipeline.
