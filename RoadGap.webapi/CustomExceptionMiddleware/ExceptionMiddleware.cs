@@ -1,6 +1,6 @@
-using System.Net;
+using System.Text.Json;
 using LoggerService;
-using RoadGap.webapi.Models;
+using RoadGap.webapi.Exceptions.General;
 
 namespace RoadGap.webapi.CustomExceptionMiddleware;
 
@@ -31,12 +31,18 @@ public class ExceptionMiddleware
     private static async Task HandleExceptionsAsync(HttpContext context, Exception exception)
     {
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-        await context.Response.WriteAsync(new ErrorDetails
+        context.Response.StatusCode = exception switch
         {
-            StatusCode = context.Response.StatusCode,
-            Message = "Internal Server Error from the custom middleware."
-        }.ToString());
+            BadRequestException => StatusCodes.Status400BadRequest,
+            NotFoundException => StatusCodes.Status404NotFound,
+            _ => StatusCodes.Status500InternalServerError
+        };
+
+        var response = new
+        {
+            error = exception.Message
+        };
+
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 }
